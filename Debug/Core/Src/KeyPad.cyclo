@@ -1,0 +1,2 @@
+../Core/Src/KeyPad.c:32:6:KeyPad_Init	1
+../Core/Src/KeyPad.c:37:9:KeyPad_Scan	5
