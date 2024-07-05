@@ -71,6 +71,8 @@ void Error_Handler(void);
 #define Latch_SPI2_GPIO_Port GPIOB
 #define Latch_SPI3_Pin GPIO_PIN_15
 #define Latch_SPI3_GPIO_Port GPIOB
+#define OE_Pin GPIO_PIN_7
+#define OE_GPIO_Port GPIOC
 #define D3_Pin GPIO_PIN_3
 #define D3_GPIO_Port GPIOB
 #define D4_Pin GPIO_PIN_4

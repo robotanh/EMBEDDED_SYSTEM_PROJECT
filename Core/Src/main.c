@@ -25,6 +25,7 @@
 #include "KeyPad.h"
 #include "LED_Screen.h"
 #include <stdio.h>
+#include <string.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -56,20 +57,6 @@ const osThreadAttr_t Led3x6Task_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
-/* Definitions for KeyPad4x5Task */
-osThreadId_t KeyPad4x5TaskHandle;
-const osThreadAttr_t KeyPad4x5Task_attributes = {
-  .name = "KeyPad4x5Task",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityRealtime,
-};
-/* Definitions for LCDTask */
-osThreadId_t LCDTaskHandle;
-const osThreadAttr_t LCDTask_attributes = {
-  .name = "LCDTask",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
-};
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -82,8 +69,6 @@ static void MX_USART1_UART_Init(void);
 static void MX_SPI3_Init(void);
 static void MX_USART2_UART_Init(void);
 void Led3x6Run(void *argument);
-void KeyPad4x5Run(void *argument);
-void LCDRun(void *argument);
 
 /* USER CODE BEGIN PFP */
 void ShiftOut_SPI(uint8_t *data, size_t size);
@@ -92,17 +77,106 @@ void Update_LCD(uint32_t num);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint8_t buttonPressed = 0;
-uint32_t lcd_num=1;
+volatile uint8_t SevenSegScanState = 0;
+uint32_t SevenSegBuffer[3] = {123456, 654321, 987654};
 
+uint8_t displayBuffer[2][4];  // Double buffer
+volatile uint8_t currentBufferIndex = 0;
 
 void ShiftOut_SPI(uint8_t *data, size_t size)
 {
+	HAL_GPIO_WritePin(Latch_SPI2_GPIO_Port, Latch_SPI2_Pin, GPIO_PIN_RESET); // Pull STCP (Latch) low
+	HAL_GPIO_WritePin(OE_GPIO_Port, OE_Pin, GPIO_PIN_SET);
 
-    HAL_GPIO_WritePin(Latch_SPI2_GPIO_Port, Latch_SPI2_Pin, GPIO_PIN_RESET); // Pull STCP (Latch) low
-    HAL_SPI_Transmit(&hspi2, data, size, 300); // Transmit data
+    if (HAL_SPI_Transmit(&hspi2, data, size, HAL_MAX_DELAY) != HAL_OK)
+    {
+    	Error_Handler();
+    }
+//    osDelay(10);
     HAL_GPIO_WritePin(Latch_SPI2_GPIO_Port, Latch_SPI2_Pin, GPIO_PIN_SET); // Pull STCP (Latch) high
+    osDelay(1);
+    HAL_GPIO_WritePin(OE_GPIO_Port, OE_Pin, GPIO_PIN_RESET);
+}
+uint8_t* SevenSegLEDsHandler(uint32_t* buffer, uint8_t scan_state) {
+    static uint8_t output[3];
+    switch (scan_state) {
+        case 0:
+            output[0] = buffer[0] % 10;
+            output[1] = buffer[1] % 10;
+            output[2] = buffer[2] % 10;
+            break;
+        case 1:
+            output[0] = (buffer[0] / 10) % 10;
+            output[1] = (buffer[1] / 10) % 10;
+            output[2] = (buffer[2] / 10) % 10;
+            break;
+        case 2:
+            output[0] = (buffer[0] / 100) % 10;
+            output[1] = (buffer[1] / 100) % 10;
+            output[2] = (buffer[2] / 100) % 10;
+            break;
+        case 3:
+            output[0] = (buffer[0] / 1000) % 10;
+            output[1] = (buffer[1] / 1000) % 10;
+            output[2] = (buffer[2] / 1000) % 10;
+            break;
+        case 4:
+            output[0] = (buffer[0] / 10000) % 10;
+            output[1] = (buffer[1] / 10000) % 10;
+            output[2] = (buffer[2] / 10000) % 10;
+            break;
+        case 5:
+            output[0] = (buffer[0] / 100000) % 10;
+            output[1] = (buffer[1] / 100000) % 10;
+            output[2] = (buffer[2] / 100000) % 10;
+            break;
+    }
+    return output;
+}
 
+void UpdateDisplayBuffer(uint32_t* buffer, uint8_t scan_state, uint8_t bufferIndex) {
+    uint8_t* curr_digit = SevenSegLEDsHandler(buffer, scan_state);
+    uint8_t curr_scan;
+    switch (scan_state) {
+        case 0:
+            curr_scan = 0b11111110;
+            break;
+        case 1:
+            curr_scan = 0b11111101;
+            break;
+        case 2:
+            curr_scan = 0b11111011;
+            break;
+        case 3:
+            curr_scan = 0b11110111;
+            break;
+        case 4:
+            curr_scan = 0b11101111;
+            break;
+        case 5:
+            curr_scan = 0b11011111;
+            break;
+        default:
+            curr_scan = 0b11111111;
+            break;
+    }
+
+    displayBuffer[bufferIndex][0] = digitMapWithDP[curr_digit[2]];
+    displayBuffer[bufferIndex][1] = curr_scan;
+    displayBuffer[bufferIndex][2] = digitMapWithDP[curr_digit[1]];
+    displayBuffer[bufferIndex][3] = digitMapWithDP[curr_digit[0]];
+}
+
+void SevenSegLEDsScan() {
+    uint8_t bufferIndex = (currentBufferIndex + 1) % 2;
+    UpdateDisplayBuffer(SevenSegBuffer, SevenSegScanState, bufferIndex);
+
+    __disable_irq();  // Disable interrupts
+    ShiftOut_SPI(displayBuffer[currentBufferIndex], 4);
+    currentBufferIndex = bufferIndex;  // Swap buffers
+    __enable_irq();   // Enable interrupts
+
+    SevenSegScanState = (SevenSegScanState + 1) % 6;
 }
 
 void ShiftOut_LCD(uint8_t *data, size_t size)
@@ -197,12 +271,6 @@ int main(void)
   /* creation of Led3x6Task */
   Led3x6TaskHandle = osThreadNew(Led3x6Run, NULL, &Led3x6Task_attributes);
 
-  /* creation of KeyPad4x5Task */
-  KeyPad4x5TaskHandle = osThreadNew(KeyPad4x5Run, NULL, &KeyPad4x5Task_attributes);
-
-  /* creation of LCDTask */
-  LCDTaskHandle = osThreadNew(LCDRun, NULL, &LCDTask_attributes);
-
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -247,7 +315,12 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+  RCC_OscInitStruct.PLL.PLLM = 8;
+  RCC_OscInitStruct.PLL.PLLN = 100;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+  RCC_OscInitStruct.PLL.PLLQ = 4;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -257,12 +330,12 @@ void SystemClock_Config(void)
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK)
   {
     Error_Handler();
   }
@@ -291,7 +364,7 @@ static void MX_SPI2_Init(void)
   hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi2.Init.NSS = SPI_NSS_SOFT;
-  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
   hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -434,6 +507,9 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOB, Latch_SPI2_Pin|Latch_SPI3_Pin|OUT0_Pin|OUT1_Pin
                           |OUT2_Pin|OUT3_Pin, GPIO_PIN_RESET);
 
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(OE_GPIO_Port, OE_Pin, GPIO_PIN_RESET);
+
   /*Configure GPIO pin : Button_Pin */
   GPIO_InitStruct.Pin = Button_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
@@ -464,6 +540,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : OE_Pin */
+  GPIO_InitStruct.Pin = OE_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(OE_GPIO_Port, &GPIO_InitStruct);
+
 /* USER CODE BEGIN MX_GPIO_Init_2 */
 /* USER CODE END MX_GPIO_Init_2 */
 }
@@ -479,56 +562,26 @@ static void MX_GPIO_Init(void)
   * @retval None
   */
 /* USER CODE END Header_Led3x6Run */
-
 void Led3x6Run(void *argument)
 {
   /* USER CODE BEGIN 5 */
-	int i=0;
+//	int i=0;
   /* Infinite loop */
+
+//	uint8_t led_buffer[4] = {0};
   for(;;)
   {
-	  uint8_t led_buffer[] = {0b11111111,digitMapWithDP[i%10],digitMapWithDP[(i+1)%10],digitMapWithDP[(i+2)%10]}; // Data to display '1' with DP
-	  ShiftOut_SPI(led_buffer, 4);
-	  i++;
-	 osDelay(500);
+//	  memset(led_buffer, 0, sizeof(led_buffer));
+//	  led_buffer[0] = digitMapWithDP[i%10];
+//	  led_buffer[1] = 0b11000000;
+//	  led_buffer[2] = digitMapWithDP[(i+1)%10];
+//	  led_buffer[3] = digitMapWithDP[(i+2)%10];
+//	  ShiftOut_SPI(led_buffer, 4);
+//	  i++;
+	  SevenSegLEDsScan();
+	  osDelay(1);
   }
   /* USER CODE END 5 */
-}
-
-/* USER CODE BEGIN Header_KeyPad4x5Run */
-/**
-* @brief Function implementing the KeyPad4x5Task thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_KeyPad4x5Run */
-void KeyPad4x5Run(void *argument)
-{
-  /* USER CODE BEGIN KeyPad4x5Run */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END KeyPad4x5Run */
-}
-
-/* USER CODE BEGIN Header_LCDRun */
-/**
-* @brief Function implementing the LCDTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_LCDRun */
-void LCDRun(void *argument)
-{
-  /* USER CODE BEGIN LCDRun */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END LCDRun */
 }
 
 /**
