@@ -44,11 +44,7 @@
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
-SPI_HandleTypeDef hspi2;
-SPI_HandleTypeDef hspi3;
-
-UART_HandleTypeDef huart1;
-UART_HandleTypeDef huart2;
+SPI_HandleTypeDef hspi1;
 
 /* Definitions for Led3x6Task */
 osThreadId_t Led3x6TaskHandle;
@@ -64,15 +60,12 @@ const osThreadAttr_t Led3x6Task_attributes = {
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
-static void MX_SPI2_Init(void);
-static void MX_USART1_UART_Init(void);
-static void MX_SPI3_Init(void);
-static void MX_USART2_UART_Init(void);
+static void MX_SPI1_Init(void);
 void Led3x6Run(void *argument);
 
 /* USER CODE BEGIN PFP */
 void ShiftOut_SPI(uint8_t *data, size_t size);
-void Update_LCD(uint32_t num);
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -80,21 +73,23 @@ void Update_LCD(uint32_t num);
 volatile uint8_t SevenSegScanState = 0;
 uint32_t SevenSegBuffer[3] = {123456, 654321, 987654};
 
-uint8_t displayBuffer[2][4];  // Double buffer
+uint8_t displayBuffer[2][5];  // Double buffer
 volatile uint8_t currentBufferIndex = 0;
 
 void ShiftOut_SPI(uint8_t *data, size_t size)
 {
-	HAL_GPIO_WritePin(Latch_SPI2_GPIO_Port, Latch_SPI2_Pin, GPIO_PIN_RESET); // Pull STCP (Latch) low
+	HAL_GPIO_WritePin(Latch_SPI1_GPIO_Port, Latch_SPI1_Pin, GPIO_PIN_RESET); // Pull STCP (Latch) low
 	HAL_GPIO_WritePin(OE_GPIO_Port, OE_Pin, GPIO_PIN_SET);
-
-    if (HAL_SPI_Transmit(&hspi2, data, size, HAL_MAX_DELAY) != HAL_OK)
+	 for (volatile int i = 0; i < 1000; i++) __NOP();
+	while (HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY);
+    if (HAL_SPI_Transmit(&hspi1, data, size, HAL_MAX_DELAY) != HAL_OK)
     {
     	Error_Handler();
     }
 //    osDelay(10);
-    HAL_GPIO_WritePin(Latch_SPI2_GPIO_Port, Latch_SPI2_Pin, GPIO_PIN_SET); // Pull STCP (Latch) high
-    osDelay(1);
+    for (volatile int i = 0; i < 1000; i++) __NOP();
+    while (HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY);
+    HAL_GPIO_WritePin(Latch_SPI1_GPIO_Port, Latch_SPI1_Pin, GPIO_PIN_SET); // Pull STCP (Latch) high
     HAL_GPIO_WritePin(OE_GPIO_Port, OE_Pin, GPIO_PIN_RESET);
 }
 uint8_t* SevenSegLEDsHandler(uint32_t* buffer, uint8_t scan_state) {
@@ -160,11 +155,11 @@ void UpdateDisplayBuffer(uint32_t* buffer, uint8_t scan_state, uint8_t bufferInd
             curr_scan = 0b11111111;
             break;
     }
-
-    displayBuffer[bufferIndex][0] = digitMapWithDP[curr_digit[2]];
-    displayBuffer[bufferIndex][1] = curr_scan;
-    displayBuffer[bufferIndex][2] = digitMapWithDP[curr_digit[1]];
-    displayBuffer[bufferIndex][3] = digitMapWithDP[curr_digit[0]];
+    displayBuffer[bufferIndex][0] = 0b11111111; //skip bít
+    displayBuffer[bufferIndex][1] = digitMapWithDP[curr_digit[2]];
+    displayBuffer[bufferIndex][2] = curr_scan;
+    displayBuffer[bufferIndex][3] = digitMapWithDP[curr_digit[1]];
+    displayBuffer[bufferIndex][4] = digitMapWithDP[curr_digit[0]];
 }
 
 void SevenSegLEDsScan() {
@@ -172,42 +167,14 @@ void SevenSegLEDsScan() {
     UpdateDisplayBuffer(SevenSegBuffer, SevenSegScanState, bufferIndex);
 
     __disable_irq();  // Disable interrupts
-    ShiftOut_SPI(displayBuffer[currentBufferIndex], 4);
+    ShiftOut_SPI(displayBuffer[currentBufferIndex], 5);
     currentBufferIndex = bufferIndex;  // Swap buffers
     __enable_irq();   // Enable interrupts
 
     SevenSegScanState = (SevenSegScanState + 1) % 6;
 }
 
-void ShiftOut_LCD(uint8_t *data, size_t size)
-{
-    HAL_GPIO_WritePin(Latch_SPI3_GPIO_Port, Latch_SPI3_Pin, GPIO_PIN_RESET); // Pull STCP (Latch) low
-    HAL_SPI_Transmit(&hspi3, data, size, 300); // Transmit data
-    HAL_GPIO_WritePin(Latch_SPI3_GPIO_Port, Latch_SPI3_Pin, GPIO_PIN_SET); // Pull STCP (Latch) high
-}
 
-uint8_t* Num_Buff_Conv(uint32_t num) {
-    // Ensure the number is within the valid range
-    if (num > 99999999) {
-        return NULL; // Return NULL for invalid input
-    }
-
-    static uint8_t output[8]; // Static array to hold the result
-    for (int i = 0; i < 8; i++) {
-        output[i] = digitMapWithDP[num % 10]; // Get the least significant digit
-        num /= 10;            // Remove the least significant digit from the number
-    }
-
-    return output;
-}
-
-void Update_LCD(uint32_t num){
-	uint8_t* buffer=Num_Buff_Conv(num);
-	if(buffer==NULL){
-		return;
-	}
-	ShiftOut_LCD(buffer,8);
-}
 
 /* USER CODE END 0 */
 
@@ -240,10 +207,7 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
-  MX_SPI2_Init();
-  MX_USART1_UART_Init();
-  MX_SPI3_Init();
-  MX_USART2_UART_Init();
+  MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -342,144 +306,40 @@ void SystemClock_Config(void)
 }
 
 /**
-  * @brief SPI2 Initialization Function
+  * @brief SPI1 Initialization Function
   * @param None
   * @retval None
   */
-static void MX_SPI2_Init(void)
+static void MX_SPI1_Init(void)
 {
 
-  /* USER CODE BEGIN SPI2_Init 0 */
+  /* USER CODE BEGIN SPI1_Init 0 */
 
-  /* USER CODE END SPI2_Init 0 */
+  /* USER CODE END SPI1_Init 0 */
 
-  /* USER CODE BEGIN SPI2_Init 1 */
+  /* USER CODE BEGIN SPI1_Init 1 */
 
-  /* USER CODE END SPI2_Init 1 */
-  /* SPI2 parameter configuration*/
-  hspi2.Instance = SPI2;
-  hspi2.Init.Mode = SPI_MODE_MASTER;
-  hspi2.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi2.Init.NSS = SPI_NSS_SOFT;
-  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_64;
-  hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
-  hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-  hspi2.Init.CRCPolynomial = 10;
-  if (HAL_SPI_Init(&hspi2) != HAL_OK)
+  /* USER CODE END SPI1_Init 1 */
+  /* SPI1 parameter configuration*/
+  hspi1.Instance = SPI1;
+  hspi1.Init.Mode = SPI_MODE_MASTER;
+  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
+  hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
+  hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
+  hspi1.Init.NSS = SPI_NSS_SOFT;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+  hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
+  hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
+  hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
+  hspi1.Init.CRCPolynomial = 10;
+  if (HAL_SPI_Init(&hspi1) != HAL_OK)
   {
     Error_Handler();
   }
-  /* USER CODE BEGIN SPI2_Init 2 */
+  /* USER CODE BEGIN SPI1_Init 2 */
 
-  /* USER CODE END SPI2_Init 2 */
-
-}
-
-/**
-  * @brief SPI3 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_SPI3_Init(void)
-{
-
-  /* USER CODE BEGIN SPI3_Init 0 */
-
-  /* USER CODE END SPI3_Init 0 */
-
-  /* USER CODE BEGIN SPI3_Init 1 */
-
-  /* USER CODE END SPI3_Init 1 */
-  /* SPI3 parameter configuration*/
-  hspi3.Instance = SPI3;
-  hspi3.Init.Mode = SPI_MODE_MASTER;
-  hspi3.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi3.Init.DataSize = SPI_DATASIZE_8BIT;
-  hspi3.Init.CLKPolarity = SPI_POLARITY_LOW;
-  hspi3.Init.CLKPhase = SPI_PHASE_1EDGE;
-  hspi3.Init.NSS = SPI_NSS_SOFT;
-  hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
-  hspi3.Init.FirstBit = SPI_FIRSTBIT_MSB;
-  hspi3.Init.TIMode = SPI_TIMODE_DISABLE;
-  hspi3.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
-  hspi3.Init.CRCPolynomial = 10;
-  if (HAL_SPI_Init(&hspi3) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN SPI3_Init 2 */
-
-  /* USER CODE END SPI3_Init 2 */
-
-}
-
-/**
-  * @brief USART1 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART1_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART1_Init 0 */
-
-  /* USER CODE END USART1_Init 0 */
-
-  /* USER CODE BEGIN USART1_Init 1 */
-
-  /* USER CODE END USART1_Init 1 */
-  huart1.Instance = USART1;
-  huart1.Init.BaudRate = 9600;
-  huart1.Init.WordLength = UART_WORDLENGTH_8B;
-  huart1.Init.StopBits = UART_STOPBITS_1;
-  huart1.Init.Parity = UART_PARITY_NONE;
-  huart1.Init.Mode = UART_MODE_TX_RX;
-  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart1) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART1_Init 2 */
-
-  /* USER CODE END USART1_Init 2 */
-
-}
-
-/**
-  * @brief USART2 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART2_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART2_Init 0 */
-
-  /* USER CODE END USART2_Init 0 */
-
-  /* USER CODE BEGIN USART2_Init 1 */
-
-  /* USER CODE END USART2_Init 1 */
-  huart2.Instance = USART2;
-  huart2.Init.BaudRate = 9600;
-  huart2.Init.WordLength = UART_WORDLENGTH_8B;
-  huart2.Init.StopBits = UART_STOPBITS_1;
-  huart2.Init.Parity = UART_PARITY_NONE;
-  huart2.Init.Mode = UART_MODE_TX_RX;
-  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART2_Init 2 */
-
-  /* USER CODE END USART2_Init 2 */
+  /* USER CODE END SPI1_Init 2 */
 
 }
 
@@ -495,33 +355,17 @@ static void MX_GPIO_Init(void)
 /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, Latch_SPI2_Pin|Latch_SPI3_Pin|OUT0_Pin|OUT1_Pin
-                          |OUT2_Pin|OUT3_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, Latch_SPI1_Pin|OUT0_Pin|OUT1_Pin|OUT2_Pin
+                          |OUT3_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(OE_GPIO_Port, OE_Pin, GPIO_PIN_RESET);
-
-  /*Configure GPIO pin : Button_Pin */
-  GPIO_InitStruct.Pin = Button_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  HAL_GPIO_Init(Button_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pin : LED_Pin */
-  GPIO_InitStruct.Pin = LED_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LED_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pins : D0_Pin D1_Pin D2_Pin D3_Pin
                            D4_Pin */
@@ -531,10 +375,10 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLDOWN;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : Latch_SPI2_Pin Latch_SPI3_Pin OUT0_Pin OUT1_Pin
-                           OUT2_Pin OUT3_Pin */
-  GPIO_InitStruct.Pin = Latch_SPI2_Pin|Latch_SPI3_Pin|OUT0_Pin|OUT1_Pin
-                          |OUT2_Pin|OUT3_Pin;
+  /*Configure GPIO pins : Latch_SPI1_Pin OUT0_Pin OUT1_Pin OUT2_Pin
+                           OUT3_Pin */
+  GPIO_InitStruct.Pin = Latch_SPI1_Pin|OUT0_Pin|OUT1_Pin|OUT2_Pin
+                          |OUT3_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -565,20 +409,17 @@ static void MX_GPIO_Init(void)
 void Led3x6Run(void *argument)
 {
   /* USER CODE BEGIN 5 */
-//	int i=0;
+
   /* Infinite loop */
 
-//	uint8_t led_buffer[4] = {0};
+	uint8_t clear_buffer[5] = {0b11111111,0b11111111,0b11111111,0b11111111,0b11111111};
   for(;;)
   {
-//	  memset(led_buffer, 0, sizeof(led_buffer));
-//	  led_buffer[0] = digitMapWithDP[i%10];
-//	  led_buffer[1] = 0b11000000;
-//	  led_buffer[2] = digitMapWithDP[(i+1)%10];
-//	  led_buffer[3] = digitMapWithDP[(i+2)%10];
-//	  ShiftOut_SPI(led_buffer, 4);
-//	  i++;
 	  SevenSegLEDsScan();
+	  osDelay(1);
+	  ShiftOut_SPI(clear_buffer, 5);
+
+//	  SevenSegLEDsScan();
 	  osDelay(1);
   }
   /* USER CODE END 5 */
