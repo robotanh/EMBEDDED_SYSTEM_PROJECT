@@ -47,6 +47,11 @@
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
 
+uint32_t lcd_num=0;
+volatile uint8_t SevenSegScanState = 0;
+uint32_t SevenSegBuffer[3] = {123456, 654321, 987654};
+uint8_t keyPressed = 0xFF;
+
 /* Definitions for Led3x6Task */
 osThreadId_t Led3x6TaskHandle;
 const osThreadAttr_t Led3x6Task_attributes = {
@@ -59,7 +64,7 @@ osThreadId_t KeyPad4x5TaskHandle;
 const osThreadAttr_t KeyPad4x5Task_attributes = {
   .name = "KeyPad4x5Task",
   .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityLow,
+  .priority = (osPriority_t) osPriorityHigh,
 };
 /* USER CODE BEGIN PV */
 
@@ -80,8 +85,7 @@ void ShiftOut_SPI(uint8_t *data, size_t size);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-volatile uint8_t SevenSegScanState = 0;
-uint32_t SevenSegBuffer[3] = {123456, 654321, 987654};
+
 
 uint8_t displayBuffer[2][5];  // Double buffer
 volatile uint8_t currentBufferIndex = 0;
@@ -490,6 +494,24 @@ void KeyPad4x5Run(void *argument)
   /* Infinite loop */
   for(;;)
   {
+	  //////////////////////////////////////////////////TODO (1) IF USING LCD/////////////////////////////////////////////////////////
+	  //////////////////////////////////////////////TODO (2) IF TESTING 3X6 LEDS//////////////////////////////////////////////////////
+	  keyPressed = KeyPad_Scan();
+	  if(keyPressed<10){
+//			  uint32_t temp=lcd_num*10+keyPressed; //  			TODO (1) UNCOMMENT IF USING LCD
+		  uint32_t temp=SevenSegBuffer[0]*10+keyPressed; //	TODO (2) UNCOMMENT IF TESTING 3X6 LEDS
+		  if(temp<=99999999){
+			  lcd_num=temp;
+//				  Update_LCD(lcd_num); // 						TODO (1) UNCOMMENT IF USING LCD
+			  SevenSegBuffer[0]=temp; //					TODO (2) UNCOMMENT IF TESTING 3X6 LEDS
+		  }
+	  }
+	  else if(keyPressed>=10 &&keyPressed<100){
+//			  lcd_num=0; //										TODO (1) UNCOMMENT IF USING LCD
+//			  Update_LCD(lcd_num); // 							TODO (1) UNCOMMENT IF USING LCD
+		  SevenSegBuffer[0]=0; //							TODO (2) UNCOMMENT IF TESTING 3X6 LEDS
+
+	  }
     osDelay(1);
   }
   /* USER CODE END KeyPad4x5Run */
