@@ -47,11 +47,6 @@
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
 
-uint32_t lcd_num=0;
-volatile uint8_t SevenSegScanState = 0;
-uint32_t SevenSegBuffer[3] = {123456, 654321, 987654};
-uint8_t keyPressed = 0xFF;
-
 /* Definitions for Led3x6Task */
 osThreadId_t Led3x6TaskHandle;
 const osThreadAttr_t Led3x6Task_attributes = {
@@ -86,21 +81,25 @@ void ShiftOut_SPI(uint8_t *data, size_t size);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
-
+volatile uint8_t SevenSegScanState = 0;
+uint32_t SevenSegBuffer[3] = {123456, 654321, 987654};
 uint8_t displayBuffer[2][5];  // Double buffer
 volatile uint8_t currentBufferIndex = 0;
+uint8_t keyPressed = 0xFF;
+uint32_t lcd_num=0;
 
 void ShiftOut_SPI(uint8_t *data, size_t size)
 {
 	HAL_GPIO_WritePin(Latch_SPI1_GPIO_Port, Latch_SPI1_Pin, GPIO_PIN_RESET); // Pull STCP (Latch) low
 	HAL_GPIO_WritePin(OE_GPIO_Port, OE_Pin, GPIO_PIN_SET);
 	 for (volatile int i = 0; i < 1000; i++) __NOP();
+//	osDelay(1);
 	while (HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY);
     if (HAL_SPI_Transmit(&hspi1, data, size, HAL_MAX_DELAY) != HAL_OK)
     {
     	Error_Handler();
     }
-//    osDelay(10);
+//    osDelay(1);
     for (volatile int i = 0; i < 1000; i++) __NOP();
     while (HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY);
     HAL_GPIO_WritePin(Latch_SPI1_GPIO_Port, Latch_SPI1_Pin, GPIO_PIN_SET); // Pull STCP (Latch) high
@@ -346,7 +345,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -512,7 +511,7 @@ void KeyPad4x5Run(void *argument)
 		  SevenSegBuffer[0]=0; //							TODO (2) UNCOMMENT IF TESTING 3X6 LEDS
 
 	  }
-    osDelay(1);
+    osDelay(100);
   }
   /* USER CODE END KeyPad4x5Run */
 }

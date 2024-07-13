@@ -23,7 +23,7 @@ const uint8_t keyMap[4][5] = {
     {100, 7, 4, 1, 1}
 };
 
-#define DEBOUNCE_DELAY pdMS_TO_TICKS(100)
+#define DEBOUNCE_DELAY pdMS_TO_TICKS(500)
 
 GPIO_InitTypeDef GPIO_InitStructPrivate = {0};
 TickType_t lastDebounceTime = 0;
