@@ -1,4 +1,6 @@
 "./Core/Src/KeyPad.o"
+"./Core/Src/LED3x6.o"
+"./Core/Src/SPI_shift.o"
 "./Core/Src/freertos.o"
 "./Core/Src/main.o"
 "./Core/Src/stm32f4xx_hal_msp.o"

@@ -23,7 +23,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "KeyPad.h"
-#include "LED_Screen.h"
+#include "LED3x6.h"
+#include "SPI_shift.h"
 #include <stdio.h>
 #include <string.h>
 /* USER CODE END Includes */
@@ -59,7 +60,7 @@ osThreadId_t KeyPad4x5TaskHandle;
 const osThreadAttr_t KeyPad4x5Task_attributes = {
   .name = "KeyPad4x5Task",
   .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityLow,
+  .priority = (osPriority_t) osPriorityHigh,
 };
 /* USER CODE BEGIN PV */
 
@@ -74,115 +75,15 @@ void Led3x6Run(void *argument);
 void KeyPad4x5Run(void *argument);
 
 /* USER CODE BEGIN PFP */
-void ShiftOut_SPI(uint8_t *data, size_t size);
+
 
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-volatile uint8_t SevenSegScanState = 0;
-uint32_t SevenSegBuffer[3] = {123456, 654321, 987654};
 
-uint8_t displayBuffer[2][5];  // Double buffer
-volatile uint8_t currentBufferIndex = 0;
 
-void ShiftOut_SPI(uint8_t *data, size_t size)
-{
-	HAL_GPIO_WritePin(Latch_SPI1_GPIO_Port, Latch_SPI1_Pin, GPIO_PIN_RESET); // Pull STCP (Latch) low
-	HAL_GPIO_WritePin(OE_GPIO_Port, OE_Pin, GPIO_PIN_SET);
-	 for (volatile int i = 0; i < 1000; i++) __NOP();
-	while (HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY);
-    if (HAL_SPI_Transmit(&hspi1, data, size, HAL_MAX_DELAY) != HAL_OK)
-    {
-    	Error_Handler();
-    }
-//    osDelay(10);
-    for (volatile int i = 0; i < 1000; i++) __NOP();
-    while (HAL_SPI_GetState(&hspi1) != HAL_SPI_STATE_READY);
-    HAL_GPIO_WritePin(Latch_SPI1_GPIO_Port, Latch_SPI1_Pin, GPIO_PIN_SET); // Pull STCP (Latch) high
-    HAL_GPIO_WritePin(OE_GPIO_Port, OE_Pin, GPIO_PIN_RESET);
-}
-uint8_t* SevenSegLEDsHandler(uint32_t* buffer, uint8_t scan_state) {
-    static uint8_t output[3];
-    switch (scan_state) {
-        case 0:
-            output[0] = buffer[0] % 10;
-            output[1] = buffer[1] % 10;
-            output[2] = buffer[2] % 10;
-            break;
-        case 1:
-            output[0] = (buffer[0] / 10) % 10;
-            output[1] = (buffer[1] / 10) % 10;
-            output[2] = (buffer[2] / 10) % 10;
-            break;
-        case 2:
-            output[0] = (buffer[0] / 100) % 10;
-            output[1] = (buffer[1] / 100) % 10;
-            output[2] = (buffer[2] / 100) % 10;
-            break;
-        case 3:
-            output[0] = (buffer[0] / 1000) % 10;
-            output[1] = (buffer[1] / 1000) % 10;
-            output[2] = (buffer[2] / 1000) % 10;
-            break;
-        case 4:
-            output[0] = (buffer[0] / 10000) % 10;
-            output[1] = (buffer[1] / 10000) % 10;
-            output[2] = (buffer[2] / 10000) % 10;
-            break;
-        case 5:
-            output[0] = (buffer[0] / 100000) % 10;
-            output[1] = (buffer[1] / 100000) % 10;
-            output[2] = (buffer[2] / 100000) % 10;
-            break;
-    }
-    return output;
-}
 
-void UpdateDisplayBuffer(uint32_t* buffer, uint8_t scan_state, uint8_t bufferIndex) {
-    uint8_t* curr_digit = SevenSegLEDsHandler(buffer, scan_state);
-    uint8_t curr_scan;
-    switch (scan_state) {
-        case 0:
-            curr_scan = 0b11111110;
-            break;
-        case 1:
-            curr_scan = 0b11111101;
-            break;
-        case 2:
-            curr_scan = 0b11111011;
-            break;
-        case 3:
-            curr_scan = 0b11110111;
-            break;
-        case 4:
-            curr_scan = 0b11101111;
-            break;
-        case 5:
-            curr_scan = 0b11011111;
-            break;
-        default:
-            curr_scan = 0b11111111;
-            break;
-    }
-    displayBuffer[bufferIndex][0] = 0b11111111; //skip bít
-    displayBuffer[bufferIndex][1] = digitMapWithDP[curr_digit[2]];
-    displayBuffer[bufferIndex][2] = curr_scan;
-    displayBuffer[bufferIndex][3] = digitMapWithDP[curr_digit[1]];
-    displayBuffer[bufferIndex][4] = digitMapWithDP[curr_digit[0]];
-}
-
-void SevenSegLEDsScan() {
-    uint8_t bufferIndex = (currentBufferIndex + 1) % 2;
-    UpdateDisplayBuffer(SevenSegBuffer, SevenSegScanState, bufferIndex);
-
-    __disable_irq();  // Disable interrupts
-    ShiftOut_SPI(displayBuffer[currentBufferIndex], 5);
-    currentBufferIndex = bufferIndex;  // Swap buffers
-    __enable_irq();   // Enable interrupts
-
-    SevenSegScanState = (SevenSegScanState + 1) % 6;
-}
 
 
 
@@ -342,7 +243,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -490,7 +391,8 @@ void KeyPad4x5Run(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+	 KeyLogic();
+    osDelay(100);
   }
   /* USER CODE END KeyPad4x5Run */
 }
