@@ -1,39 +1,23 @@
-/*
- * KeyPad.c
- *
- *  Created on: Jun 27, 2024
- *      Author: Admin
- */
-
 #include "KeyPad.h"
-
 
 uint8_t keyPressed = 0xFF;
 uint8_t lcd_num = 0;
-//const uint8_t keyMap[4][5] = {
-//    {'D', 'C', 'B', 'A', '*'},
-//    {'#', '9', '6', '3', '7'},
-//    {'0', '8', '5', '2', '4'},
-//    {'*', '7', '4', '1', '1'}
-//};
 
 const uint8_t keyMap[4][5] = {
-    {13, 12, 11, 10,100},
-    {200, 9, 6, 3, 7},
-    {0, 8, 5, 2, 4},
-    {100, 7, 4, 1, 1}
+    {'A', 'B', 'C', 'D', 'E'},
+    {'F', '9', '6', '3', 'G'},
+    {'0', '8', '5', '2', 'H'},
+    {'I', '7', '4', '1', 'J'}
 };
 
-#define DEBOUNCE_DELAY pdMS_TO_TICKS(500)
+#define DEBOUNCE_DELAY pdMS_TO_TICKS(300)
 
 GPIO_InitTypeDef GPIO_InitStructPrivate = {0};
 TickType_t lastDebounceTime = 0;
 
-
 void KeyPad_Init(void) {
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9, GPIO_PIN_SET);
 }
-
 
 uint8_t KeyPad_Scan(void) {
     TickType_t currentMillis = xTaskGetTickCount();
@@ -61,24 +45,112 @@ uint8_t KeyPad_Scan(void) {
     return 0xFF;
 }
 
-void KeyLogic(){
-	//////////////////////////////////////////////////TODO (1) IF USING LCD/////////////////////////////////////////////////////////
-		  //////////////////////////////////////////////TODO (2) IF TESTING 3X6 LEDS//////////////////////////////////////////////////////
-		  keyPressed = KeyPad_Scan();
-		  if(keyPressed<10){
-	//			  uint32_t temp=lcd_num*10+keyPressed; //  			TODO (1) UNCOMMENT IF USING LCD
-			  uint32_t temp=SevenSegBuffer[0]*10+keyPressed; //	TODO (2) UNCOMMENT IF TESTING 3X6 LEDS
-			  if(temp<=99999999){
-				  lcd_num=temp;
-	//				  Update_LCD(lcd_num); // 						TODO (1) UNCOMMENT IF USING LCD
-				  SevenSegBuffer[0]=temp; //					TODO (2) UNCOMMENT IF TESTING 3X6 LEDS
-			  }
-		  }
-		  else if(keyPressed>=10 &&keyPressed<100){
-	//			  lcd_num=0; //										TODO (1) UNCOMMENT IF USING LCD
-	//			  Update_LCD(lcd_num); // 							TODO (1) UNCOMMENT IF USING LCD
-			  SevenSegBuffer[0]=0; //							TODO (2) UNCOMMENT IF TESTING 3X6 LEDS
+void KeyLogic() {
+    keyPressed = KeyPad_Scan();
 
-		  }
+    switch (keyPressed) {
+        case '0':
+            SevenSegBuffer[0] = 1;
+            SevenSegBuffer[1] = 0;
+            SevenSegBuffer[2] = 0;
+            break;
+        case '1':
+            SevenSegBuffer[0] = 10;
+            SevenSegBuffer[1] = 0;
+            SevenSegBuffer[2] = 0;
+            break;
+        case '2':
+            SevenSegBuffer[0] = 100;
+            SevenSegBuffer[1] = 0;
+            SevenSegBuffer[2] = 0;
+            break;
+        case '3':
+            SevenSegBuffer[0] = 1000;
+            SevenSegBuffer[1] = 0;
+            SevenSegBuffer[2] = 0;
+            break;
+        case '4':
+            SevenSegBuffer[0] = 10000;
+            SevenSegBuffer[1] = 0;
+            SevenSegBuffer[2] = 0;
+            break;
+        case '5':
+            SevenSegBuffer[0] = 100000;
+            SevenSegBuffer[1] = 0;
+            SevenSegBuffer[2] = 0;
+            break;
+        case '6':
+            SevenSegBuffer[0] = 0;
+            SevenSegBuffer[1] = 1;
+            SevenSegBuffer[2] = 0;
+            break;
+        case '7':
+            SevenSegBuffer[0] = 0;
+            SevenSegBuffer[1] = 10;
+            SevenSegBuffer[2] = 0;
+            break;
+        case '8':
+            SevenSegBuffer[0] = 0;
+            SevenSegBuffer[1] = 100;
+            SevenSegBuffer[2] = 0;
+            break;
+        case '9':
+            SevenSegBuffer[0] = 0;
+            SevenSegBuffer[1] = 1000;
+            SevenSegBuffer[2] = 0;
+            break;
+        case 'A':
+            SevenSegBuffer[0] = 0;
+            SevenSegBuffer[1] = 10000;
+            SevenSegBuffer[2] = 0;
+            break;
+        case 'B':
+            SevenSegBuffer[0] = 0;
+            SevenSegBuffer[1] = 100000;
+            SevenSegBuffer[2] = 0;
+            break;
+        case 'C':
+            SevenSegBuffer[0] = 0;
+            SevenSegBuffer[1] = 0;
+            SevenSegBuffer[2] = 1;
+            break;
+        case 'D':
+            SevenSegBuffer[0] = 0;
+            SevenSegBuffer[1] = 0;
+            SevenSegBuffer[2] = 10;
+            break;
+        case 'E':
+            SevenSegBuffer[0] = 0;
+            SevenSegBuffer[1] = 0;
+            SevenSegBuffer[2] = 100;
+            break;
+        case 'F':
+            SevenSegBuffer[0] = 0;
+            SevenSegBuffer[1] = 0;
+            SevenSegBuffer[2] = 1000;
+            break;
+        case 'G':
+            SevenSegBuffer[0] = 0;
+            SevenSegBuffer[1] = 0;
+            SevenSegBuffer[2] = 10000;
+            break;
+        case 'H':
+            SevenSegBuffer[0] = 0;
+            SevenSegBuffer[1] = 0;
+            SevenSegBuffer[2] = 100000;
+            break;
+        case 'I':
+            SevenSegBuffer[0] = 0;
+            SevenSegBuffer[1] = 0;
+            SevenSegBuffer[2] = 11;
+            break;
+        case 'J':
+            SevenSegBuffer[0] = 0;
+            SevenSegBuffer[1] = 0;
+            SevenSegBuffer[2] = 111;
+            break;
+        default:
+            // No valid key pressed
+            break;
+    }
 }
-
