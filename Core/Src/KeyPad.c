@@ -4,10 +4,10 @@ uint8_t keyPressed = 0xFF;
 uint8_t lcd_num = 0;
 
 const uint8_t keyMap[4][5] = {
-    {'*', '9', '6', '3', 'H'},
-    {'0', '8', '5', '2', 'G'},
-    {'#', '7', '4', '1', 'F'},
-	{'A', 'B', 'C', 'D', 'E'}
+    {'C', '7', '4', '1', 'A'},
+    {'0', '8', '5', '2', 'B'},
+    {'E', '9', '6', '3', 'D'},
+	{'T', 'P', '$', 'L', 'F'}
 };
 
 #define DEBOUNCE_DELAY pdMS_TO_TICKS(50)
@@ -226,16 +226,26 @@ void KeyLogic() {
                 SevenSegBuffer[1] = 0;
                 SevenSegBuffer[2] = 1000;
                 break;
-            case 'G':
+            case 'T':
                 SevenSegBuffer[0] = 0;
                 SevenSegBuffer[1] = 0;
                 SevenSegBuffer[2] = 10000;
                 break;
-            case 'H':
+            case 'P':
                 SevenSegBuffer[0] = 0;
                 SevenSegBuffer[1] = 0;
                 SevenSegBuffer[2] = 100000;
                 break;
+            case '$':
+				SevenSegBuffer[0] = 0;
+				SevenSegBuffer[1] = 0;
+				SevenSegBuffer[2] = 111111;
+				break;
+            case 'L':
+				SevenSegBuffer[0] = 0;
+				SevenSegBuffer[1] = 111111;
+				SevenSegBuffer[2] = 0;
+				break;
             default:
 
                 break;
