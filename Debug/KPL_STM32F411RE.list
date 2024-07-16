@@ -348,7 +348,7 @@ Disassembly of section .text:
 KeyState keyState = KEY_IDLE;
 
 void KeyPad_Init(void) {
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9, GPIO_PIN_SET);
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9, GPIO_PIN_RESET);
 }
 uint8_t ScanColumns(uint8_t row) {
  80004d0:	b580      	push	{r7, lr}
@@ -367,189 +367,189 @@ uint8_t ScanColumns(uint8_t row) {
  80004f0:	080005af 	.word	0x080005af
  80004f4:	08000609 	.word	0x08000609
         case 0:
-            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_0) == GPIO_PIN_SET) return keyMap[0][0];
+            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_0) == GPIO_PIN_RESET) return keyMap[0][0];
  80004f8:	2101      	movs	r1, #1
  80004fa:	4861      	ldr	r0, [pc, #388]	@ (8000680 <ScanColumns+0x1b0>)
  80004fc:	f001 fb48 	bl	8001b90 <HAL_GPIO_ReadPin>
  8000500:	4603      	mov	r3, r0
- 8000502:	2b01      	cmp	r3, #1
+ 8000502:	2b00      	cmp	r3, #0
  8000504:	d101      	bne.n	800050a <ScanColumns+0x3a>
  8000506:	232a      	movs	r3, #42	@ 0x2a
  8000508:	e0b5      	b.n	8000676 <ScanColumns+0x1a6>
-            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_SET) return keyMap[0][1];
+            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_RESET) return keyMap[0][1];
  800050a:	2102      	movs	r1, #2
  800050c:	485c      	ldr	r0, [pc, #368]	@ (8000680 <ScanColumns+0x1b0>)
  800050e:	f001 fb3f 	bl	8001b90 <HAL_GPIO_ReadPin>
  8000512:	4603      	mov	r3, r0
- 8000514:	2b01      	cmp	r3, #1
+ 8000514:	2b00      	cmp	r3, #0
  8000516:	d101      	bne.n	800051c <ScanColumns+0x4c>
  8000518:	2339      	movs	r3, #57	@ 0x39
  800051a:	e0ac      	b.n	8000676 <ScanColumns+0x1a6>
-            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == GPIO_PIN_SET) return keyMap[0][2];
+            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == GPIO_PIN_RESET) return keyMap[0][2];
  800051c:	2104      	movs	r1, #4
  800051e:	4858      	ldr	r0, [pc, #352]	@ (8000680 <ScanColumns+0x1b0>)
  8000520:	f001 fb36 	bl	8001b90 <HAL_GPIO_ReadPin>
  8000524:	4603      	mov	r3, r0
- 8000526:	2b01      	cmp	r3, #1
+ 8000526:	2b00      	cmp	r3, #0
  8000528:	d101      	bne.n	800052e <ScanColumns+0x5e>
  800052a:	2336      	movs	r3, #54	@ 0x36
  800052c:	e0a3      	b.n	8000676 <ScanColumns+0x1a6>
-            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3) == GPIO_PIN_SET) return keyMap[0][3];
+            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3) == GPIO_PIN_RESET) return keyMap[0][3];
  800052e:	2108      	movs	r1, #8
  8000530:	4853      	ldr	r0, [pc, #332]	@ (8000680 <ScanColumns+0x1b0>)
  8000532:	f001 fb2d 	bl	8001b90 <HAL_GPIO_ReadPin>
  8000536:	4603      	mov	r3, r0
- 8000538:	2b01      	cmp	r3, #1
+ 8000538:	2b00      	cmp	r3, #0
  800053a:	d101      	bne.n	8000540 <ScanColumns+0x70>
  800053c:	2333      	movs	r3, #51	@ 0x33
  800053e:	e09a      	b.n	8000676 <ScanColumns+0x1a6>
-            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_4) == GPIO_PIN_SET) return keyMap[0][4];
+            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_4) == GPIO_PIN_RESET) return keyMap[0][4];
  8000540:	2110      	movs	r1, #16
  8000542:	484f      	ldr	r0, [pc, #316]	@ (8000680 <ScanColumns+0x1b0>)
  8000544:	f001 fb24 	bl	8001b90 <HAL_GPIO_ReadPin>
  8000548:	4603      	mov	r3, r0
- 800054a:	2b01      	cmp	r3, #1
+ 800054a:	2b00      	cmp	r3, #0
  800054c:	f040 808b 	bne.w	8000666 <ScanColumns+0x196>
  8000550:	2348      	movs	r3, #72	@ 0x48
  8000552:	e090      	b.n	8000676 <ScanColumns+0x1a6>
             break;
         case 1:
-            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_0) == GPIO_PIN_SET) return keyMap[1][0];
+            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_0) == GPIO_PIN_RESET) return keyMap[1][0];
  8000554:	2101      	movs	r1, #1
  8000556:	484a      	ldr	r0, [pc, #296]	@ (8000680 <ScanColumns+0x1b0>)
  8000558:	f001 fb1a 	bl	8001b90 <HAL_GPIO_ReadPin>
  800055c:	4603      	mov	r3, r0
- 800055e:	2b01      	cmp	r3, #1
+ 800055e:	2b00      	cmp	r3, #0
  8000560:	d101      	bne.n	8000566 <ScanColumns+0x96>
  8000562:	2330      	movs	r3, #48	@ 0x30
  8000564:	e087      	b.n	8000676 <ScanColumns+0x1a6>
-            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_SET) return keyMap[1][1];
+            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_RESET) return keyMap[1][1];
  8000566:	2102      	movs	r1, #2
  8000568:	4845      	ldr	r0, [pc, #276]	@ (8000680 <ScanColumns+0x1b0>)
  800056a:	f001 fb11 	bl	8001b90 <HAL_GPIO_ReadPin>
  800056e:	4603      	mov	r3, r0
- 8000570:	2b01      	cmp	r3, #1
+ 8000570:	2b00      	cmp	r3, #0
  8000572:	d101      	bne.n	8000578 <ScanColumns+0xa8>
  8000574:	2338      	movs	r3, #56	@ 0x38
  8000576:	e07e      	b.n	8000676 <ScanColumns+0x1a6>
-            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == GPIO_PIN_SET) return keyMap[1][2];
+            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == GPIO_PIN_RESET) return keyMap[1][2];
  8000578:	2104      	movs	r1, #4
  800057a:	4841      	ldr	r0, [pc, #260]	@ (8000680 <ScanColumns+0x1b0>)
  800057c:	f001 fb08 	bl	8001b90 <HAL_GPIO_ReadPin>
  8000580:	4603      	mov	r3, r0
- 8000582:	2b01      	cmp	r3, #1
+ 8000582:	2b00      	cmp	r3, #0
  8000584:	d101      	bne.n	800058a <ScanColumns+0xba>
  8000586:	2335      	movs	r3, #53	@ 0x35
  8000588:	e075      	b.n	8000676 <ScanColumns+0x1a6>
-            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3) == GPIO_PIN_SET) return keyMap[1][3];
+            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3) == GPIO_PIN_RESET) return keyMap[1][3];
  800058a:	2108      	movs	r1, #8
  800058c:	483c      	ldr	r0, [pc, #240]	@ (8000680 <ScanColumns+0x1b0>)
  800058e:	f001 faff 	bl	8001b90 <HAL_GPIO_ReadPin>
  8000592:	4603      	mov	r3, r0
- 8000594:	2b01      	cmp	r3, #1
+ 8000594:	2b00      	cmp	r3, #0
  8000596:	d101      	bne.n	800059c <ScanColumns+0xcc>
  8000598:	2332      	movs	r3, #50	@ 0x32
  800059a:	e06c      	b.n	8000676 <ScanColumns+0x1a6>
-            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_4) == GPIO_PIN_SET) return keyMap[1][4];
+            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_4) == GPIO_PIN_RESET) return keyMap[1][4];
  800059c:	2110      	movs	r1, #16
  800059e:	4838      	ldr	r0, [pc, #224]	@ (8000680 <ScanColumns+0x1b0>)
  80005a0:	f001 faf6 	bl	8001b90 <HAL_GPIO_ReadPin>
  80005a4:	4603      	mov	r3, r0
- 80005a6:	2b01      	cmp	r3, #1
+ 80005a6:	2b00      	cmp	r3, #0
  80005a8:	d15f      	bne.n	800066a <ScanColumns+0x19a>
  80005aa:	2347      	movs	r3, #71	@ 0x47
  80005ac:	e063      	b.n	8000676 <ScanColumns+0x1a6>
             break;
         case 2:
-            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_0) == GPIO_PIN_SET) return keyMap[2][0];
+            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_0) == GPIO_PIN_RESET) return keyMap[2][0];
  80005ae:	2101      	movs	r1, #1
  80005b0:	4833      	ldr	r0, [pc, #204]	@ (8000680 <ScanColumns+0x1b0>)
  80005b2:	f001 faed 	bl	8001b90 <HAL_GPIO_ReadPin>
  80005b6:	4603      	mov	r3, r0
- 80005b8:	2b01      	cmp	r3, #1
+ 80005b8:	2b00      	cmp	r3, #0
  80005ba:	d101      	bne.n	80005c0 <ScanColumns+0xf0>
  80005bc:	2323      	movs	r3, #35	@ 0x23
  80005be:	e05a      	b.n	8000676 <ScanColumns+0x1a6>
-            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_SET) return keyMap[2][1];
+            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_RESET) return keyMap[2][1];
  80005c0:	2102      	movs	r1, #2
  80005c2:	482f      	ldr	r0, [pc, #188]	@ (8000680 <ScanColumns+0x1b0>)
  80005c4:	f001 fae4 	bl	8001b90 <HAL_GPIO_ReadPin>
  80005c8:	4603      	mov	r3, r0
- 80005ca:	2b01      	cmp	r3, #1
+ 80005ca:	2b00      	cmp	r3, #0
  80005cc:	d101      	bne.n	80005d2 <ScanColumns+0x102>
  80005ce:	2337      	movs	r3, #55	@ 0x37
  80005d0:	e051      	b.n	8000676 <ScanColumns+0x1a6>
-            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == GPIO_PIN_SET) return keyMap[2][2];
+            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == GPIO_PIN_RESET) return keyMap[2][2];
  80005d2:	2104      	movs	r1, #4
  80005d4:	482a      	ldr	r0, [pc, #168]	@ (8000680 <ScanColumns+0x1b0>)
  80005d6:	f001 fadb 	bl	8001b90 <HAL_GPIO_ReadPin>
  80005da:	4603      	mov	r3, r0
- 80005dc:	2b01      	cmp	r3, #1
+ 80005dc:	2b00      	cmp	r3, #0
  80005de:	d101      	bne.n	80005e4 <ScanColumns+0x114>
  80005e0:	2334      	movs	r3, #52	@ 0x34
  80005e2:	e048      	b.n	8000676 <ScanColumns+0x1a6>
-            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3) == GPIO_PIN_SET) return keyMap[2][3];
+            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3) == GPIO_PIN_RESET) return keyMap[2][3];
  80005e4:	2108      	movs	r1, #8
  80005e6:	4826      	ldr	r0, [pc, #152]	@ (8000680 <ScanColumns+0x1b0>)
  80005e8:	f001 fad2 	bl	8001b90 <HAL_GPIO_ReadPin>
  80005ec:	4603      	mov	r3, r0
- 80005ee:	2b01      	cmp	r3, #1
+ 80005ee:	2b00      	cmp	r3, #0
  80005f0:	d101      	bne.n	80005f6 <ScanColumns+0x126>
  80005f2:	2331      	movs	r3, #49	@ 0x31
  80005f4:	e03f      	b.n	8000676 <ScanColumns+0x1a6>
-            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_4) == GPIO_PIN_SET) return keyMap[2][4];
+            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_4) == GPIO_PIN_RESET) return keyMap[2][4];
  80005f6:	2110      	movs	r1, #16
  80005f8:	4821      	ldr	r0, [pc, #132]	@ (8000680 <ScanColumns+0x1b0>)
  80005fa:	f001 fac9 	bl	8001b90 <HAL_GPIO_ReadPin>
  80005fe:	4603      	mov	r3, r0
- 8000600:	2b01      	cmp	r3, #1
+ 8000600:	2b00      	cmp	r3, #0
  8000602:	d134      	bne.n	800066e <ScanColumns+0x19e>
  8000604:	2346      	movs	r3, #70	@ 0x46
  8000606:	e036      	b.n	8000676 <ScanColumns+0x1a6>
             break;
         case 3:
-            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_0) == GPIO_PIN_SET) return keyMap[3][0];
+            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_0) == GPIO_PIN_RESET) return keyMap[3][0];
  8000608:	2101      	movs	r1, #1
  800060a:	481d      	ldr	r0, [pc, #116]	@ (8000680 <ScanColumns+0x1b0>)
  800060c:	f001 fac0 	bl	8001b90 <HAL_GPIO_ReadPin>
  8000610:	4603      	mov	r3, r0
- 8000612:	2b01      	cmp	r3, #1
+ 8000612:	2b00      	cmp	r3, #0
  8000614:	d101      	bne.n	800061a <ScanColumns+0x14a>
  8000616:	2341      	movs	r3, #65	@ 0x41
  8000618:	e02d      	b.n	8000676 <ScanColumns+0x1a6>
-            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_SET) return keyMap[3][1];
+            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_1) == GPIO_PIN_RESET) return keyMap[3][1];
  800061a:	2102      	movs	r1, #2
  800061c:	4818      	ldr	r0, [pc, #96]	@ (8000680 <ScanColumns+0x1b0>)
  800061e:	f001 fab7 	bl	8001b90 <HAL_GPIO_ReadPin>
  8000622:	4603      	mov	r3, r0
- 8000624:	2b01      	cmp	r3, #1
+ 8000624:	2b00      	cmp	r3, #0
  8000626:	d101      	bne.n	800062c <ScanColumns+0x15c>
  8000628:	2342      	movs	r3, #66	@ 0x42
  800062a:	e024      	b.n	8000676 <ScanColumns+0x1a6>
-            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == GPIO_PIN_SET) return keyMap[3][2];
+            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_2) == GPIO_PIN_RESET) return keyMap[3][2];
  800062c:	2104      	movs	r1, #4
  800062e:	4814      	ldr	r0, [pc, #80]	@ (8000680 <ScanColumns+0x1b0>)
  8000630:	f001 faae 	bl	8001b90 <HAL_GPIO_ReadPin>
  8000634:	4603      	mov	r3, r0
- 8000636:	2b01      	cmp	r3, #1
+ 8000636:	2b00      	cmp	r3, #0
  8000638:	d101      	bne.n	800063e <ScanColumns+0x16e>
  800063a:	2343      	movs	r3, #67	@ 0x43
  800063c:	e01b      	b.n	8000676 <ScanColumns+0x1a6>
-            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3) == GPIO_PIN_SET) return keyMap[3][3];
+            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_3) == GPIO_PIN_RESET) return keyMap[3][3];
  800063e:	2108      	movs	r1, #8
  8000640:	480f      	ldr	r0, [pc, #60]	@ (8000680 <ScanColumns+0x1b0>)
  8000642:	f001 faa5 	bl	8001b90 <HAL_GPIO_ReadPin>
  8000646:	4603      	mov	r3, r0
- 8000648:	2b01      	cmp	r3, #1
+ 8000648:	2b00      	cmp	r3, #0
  800064a:	d101      	bne.n	8000650 <ScanColumns+0x180>
  800064c:	2344      	movs	r3, #68	@ 0x44
  800064e:	e012      	b.n	8000676 <ScanColumns+0x1a6>
-            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_4) == GPIO_PIN_SET) return keyMap[3][4];
+            if (HAL_GPIO_ReadPin(GPIOB, GPIO_PIN_4) == GPIO_PIN_RESET) return keyMap[3][4];
  8000650:	2110      	movs	r1, #16
  8000652:	480b      	ldr	r0, [pc, #44]	@ (8000680 <ScanColumns+0x1b0>)
  8000654:	f001 fa9c 	bl	8001b90 <HAL_GPIO_ReadPin>
  8000658:	4603      	mov	r3, r0
- 800065a:	2b01      	cmp	r3, #1
+ 800065a:	2b00      	cmp	r3, #0
  800065c:	d109      	bne.n	8000672 <ScanColumns+0x1a2>
  800065e:	2345      	movs	r3, #69	@ 0x45
  8000660:	e009      	b.n	8000676 <ScanColumns+0x1a6>
@@ -570,7 +570,7 @@ uint8_t ScanColumns(uint8_t row) {
             break;
  8000672:	bf00      	nop
     }
-    return 0xFF;
+    return 0xFF;  // No key pressed
  8000674:	23ff      	movs	r3, #255	@ 0xff
 }
  8000676:	4618      	mov	r0, r3
@@ -583,6 +583,7 @@ uint8_t ScanColumns(uint8_t row) {
 08000684 <KeyPad_Scan>:
 
 
+
 uint8_t KeyPad_Scan(void) {
  8000684:	b580      	push	{r7, lr}
  8000686:	b082      	sub	sp, #8
@@ -590,13 +591,13 @@ uint8_t KeyPad_Scan(void) {
     uint8_t key;
 
     // Scan row 1
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_SET);
- 800068a:	2201      	movs	r2, #1
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6, GPIO_PIN_RESET);
+ 800068a:	2200      	movs	r2, #0
  800068c:	2140      	movs	r1, #64	@ 0x40
  800068e:	482c      	ldr	r0, [pc, #176]	@ (8000740 <KeyPad_Scan+0xbc>)
  8000690:	f001 fa96 	bl	8001bc0 <HAL_GPIO_WritePin>
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9, GPIO_PIN_RESET);
- 8000694:	2200      	movs	r2, #0
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9, GPIO_PIN_SET);
+ 8000694:	2201      	movs	r2, #1
  8000696:	f44f 7160 	mov.w	r1, #896	@ 0x380
  800069a:	4829      	ldr	r0, [pc, #164]	@ (8000740 <KeyPad_Scan+0xbc>)
  800069c:	f001 fa90 	bl	8001bc0 <HAL_GPIO_WritePin>
@@ -613,13 +614,13 @@ uint8_t KeyPad_Scan(void) {
  80006b2:	e041      	b.n	8000738 <KeyPad_Scan+0xb4>
 
     // Scan row 2
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_SET);
- 80006b4:	2201      	movs	r2, #1
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_7, GPIO_PIN_RESET);
+ 80006b4:	2200      	movs	r2, #0
  80006b6:	2180      	movs	r1, #128	@ 0x80
  80006b8:	4821      	ldr	r0, [pc, #132]	@ (8000740 <KeyPad_Scan+0xbc>)
  80006ba:	f001 fa81 	bl	8001bc0 <HAL_GPIO_WritePin>
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6 | GPIO_PIN_8 | GPIO_PIN_9, GPIO_PIN_RESET);
- 80006be:	2200      	movs	r2, #0
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6 | GPIO_PIN_8 | GPIO_PIN_9, GPIO_PIN_SET);
+ 80006be:	2201      	movs	r2, #1
  80006c0:	f44f 7150 	mov.w	r1, #832	@ 0x340
  80006c4:	481e      	ldr	r0, [pc, #120]	@ (8000740 <KeyPad_Scan+0xbc>)
  80006c6:	f001 fa7b 	bl	8001bc0 <HAL_GPIO_WritePin>
@@ -636,13 +637,13 @@ uint8_t KeyPad_Scan(void) {
  80006dc:	e02c      	b.n	8000738 <KeyPad_Scan+0xb4>
 
     // Scan row 3
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_SET);
- 80006de:	2201      	movs	r2, #1
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_8, GPIO_PIN_RESET);
+ 80006de:	2200      	movs	r2, #0
  80006e0:	f44f 7180 	mov.w	r1, #256	@ 0x100
  80006e4:	4816      	ldr	r0, [pc, #88]	@ (8000740 <KeyPad_Scan+0xbc>)
  80006e6:	f001 fa6b 	bl	8001bc0 <HAL_GPIO_WritePin>
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_9, GPIO_PIN_RESET);
- 80006ea:	2200      	movs	r2, #0
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_9, GPIO_PIN_SET);
+ 80006ea:	2201      	movs	r2, #1
  80006ec:	f44f 7130 	mov.w	r1, #704	@ 0x2c0
  80006f0:	4813      	ldr	r0, [pc, #76]	@ (8000740 <KeyPad_Scan+0xbc>)
  80006f2:	f001 fa65 	bl	8001bc0 <HAL_GPIO_WritePin>
@@ -659,13 +660,13 @@ uint8_t KeyPad_Scan(void) {
  8000708:	e016      	b.n	8000738 <KeyPad_Scan+0xb4>
 
     // Scan row 4
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_9, GPIO_PIN_SET);
- 800070a:	2201      	movs	r2, #1
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_9, GPIO_PIN_RESET);
+ 800070a:	2200      	movs	r2, #0
  800070c:	f44f 7100 	mov.w	r1, #512	@ 0x200
  8000710:	480b      	ldr	r0, [pc, #44]	@ (8000740 <KeyPad_Scan+0xbc>)
  8000712:	f001 fa55 	bl	8001bc0 <HAL_GPIO_WritePin>
-    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8, GPIO_PIN_RESET);
- 8000716:	2200      	movs	r2, #0
+    HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8, GPIO_PIN_SET);
+ 8000716:	2201      	movs	r2, #1
  8000718:	f44f 71e0 	mov.w	r1, #448	@ 0x1c0
  800071c:	4808      	ldr	r0, [pc, #32]	@ (8000740 <KeyPad_Scan+0xbc>)
  800071e:	f001 fa4f 	bl	8001bc0 <HAL_GPIO_WritePin>
@@ -691,6 +692,7 @@ uint8_t KeyPad_Scan(void) {
  8000740:	40020400 	.word	0x40020400
 
 08000744 <KeyLogic>:
+
 
 
 
@@ -2364,8 +2366,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
  8001210:	2300      	movs	r3, #0
  8001212:	61bb      	str	r3, [r7, #24]
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
- 8001214:	2302      	movs	r3, #2
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+ 8001214:	2301      	movs	r3, #1
  8001216:	61fb      	str	r3, [r7, #28]
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
  8001218:	f107 0314 	add.w	r3, r7, #20

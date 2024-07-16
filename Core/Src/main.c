@@ -325,7 +325,7 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pin = D0_Pin|D1_Pin|D2_Pin|D3_Pin
                           |D4_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /*Configure GPIO pins : Latch_SPI1_Pin OUT0_Pin OUT1_Pin OUT2_Pin
