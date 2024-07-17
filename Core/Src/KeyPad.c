@@ -25,6 +25,8 @@ typedef enum {
     KEY_HOLDING
 } KeyState;
 
+
+
 KeyState keyState = KEY_IDLE;
 
 void KeyPad_Init(void) {

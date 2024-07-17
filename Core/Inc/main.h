@@ -32,6 +32,7 @@ extern "C" {
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 extern uint32_t SevenSegBuffer[3];
+extern uint32_t password;
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
