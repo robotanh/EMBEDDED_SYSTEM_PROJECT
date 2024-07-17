@@ -26,8 +26,18 @@ typedef enum {
 } KeyState;
 
 
+typedef enum {
+    SEQ_IDLE,
+    SEQ_PRESSED_T,
+    SEQ_PRESSED_T_L,
+	SEQ_PRESSED_T_$,
+	SEQ_PRESSED_T_F3,
+	SEQ_PRESSED_T_F4,
+} SequenceState;
+
 
 KeyState keyState = KEY_IDLE;
+SequenceState seqState = SEQ_IDLE;
 
 void KeyPad_Init(void) {
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9, GPIO_PIN_RESET);
@@ -232,6 +242,11 @@ void KeyLogic() {
                 SevenSegBuffer[0] = 0;
                 SevenSegBuffer[1] = 0;
                 SevenSegBuffer[2] = 10000;
+                if (seqState == SEQ_IDLE) {
+					seqState = SEQ_PRESSED_T;
+				} else {
+					seqState = SEQ_IDLE;
+				}
                 break;
             case 'P':
                 SevenSegBuffer[0] = 0;
@@ -247,9 +262,15 @@ void KeyLogic() {
 				SevenSegBuffer[0] = 0;
 				SevenSegBuffer[1] = 111111;
 				SevenSegBuffer[2] = 0;
+				if (seqState == SEQ_PRESSED_T) {
+					//Show total
+					seqState = SEQ_IDLE;
+				} else {
+					seqState = SEQ_IDLE;
+				}
 				break;
             default:
-
+            	seqState = SEQ_IDLE;
                 break;
         }
         keyPressed = 0xFF;

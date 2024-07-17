@@ -48,7 +48,7 @@
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
 
-password = 345;
+uint32_t password = 345;
 /* Definitions for Led3x6Task */
 osThreadId_t Led3x6TaskHandle;
 const osThreadAttr_t Led3x6Task_attributes = {
