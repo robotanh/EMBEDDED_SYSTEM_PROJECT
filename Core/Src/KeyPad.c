@@ -302,7 +302,7 @@ void KeyLogic_Action() {
 
 
             snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06ld", row2);
-            snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "Total");
+            snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "TOTAL");
 
 
             LEDPointFlag = 3;
@@ -321,7 +321,7 @@ void KeyLogic_Action() {
             snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "%06d", 0);
             break;
         case SEQ_NUMBER:
-            snprintf(buffer, sizeof(buffer), "%06d", accumulatedNumber);
+            snprintf(buffer, sizeof(buffer), "%06ld", accumulatedNumber);
             snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%s", buffer);
             snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06d", 0);
             snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "%06d", 0);
