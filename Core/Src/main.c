@@ -393,7 +393,8 @@ void KeyPad4x5Run(void *argument)
   for(;;)
   {
 	 KeyLogic();
-    osDelay(1);
+	 KeyLogic_Action();
+	 osDelay(1);
   }
   /* USER CODE END KeyPad4x5Run */
 }

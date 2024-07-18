@@ -18,6 +18,8 @@ TickType_t lastDebounceTime = 0;
 TickType_t lastKeyPressTime = 0;
 uint8_t lastKeyPressed = 0xFF;
 
+uint32_t accumulatedNumber = 0;
+uint8_t numberOfDigits = 0;
 typedef enum {
     KEY_IDLE,
     KEY_DEBOUNCING,
@@ -33,7 +35,9 @@ typedef enum {
 	SEQ_PRESSED_T_$,
 	SEQ_PRESSED_T_F3,
 	SEQ_PRESSED_T_F4,
+	SEQ_NUMBER
 } SequenceState;
+
 
 
 KeyState keyState = KEY_IDLE;
@@ -157,123 +161,129 @@ void KeyLogic() {
     }
 
     if (keyPressed != 0xFF) {
-        switch (keyPressed) {
-            case '0':
-                SevenSegBuffer[0] = 1;
-                SevenSegBuffer[1] = 0;
-                SevenSegBuffer[2] = 0;
-                break;
-            case '1':
-                SevenSegBuffer[0] = 10;
-                SevenSegBuffer[1] = 0;
-                SevenSegBuffer[2] = 0;
-                break;
-            case '2':
-                SevenSegBuffer[0] = 100;
-                SevenSegBuffer[1] = 0;
-                SevenSegBuffer[2] = 0;
-                break;
-            case '3':
-                SevenSegBuffer[0] = 1000;
-                SevenSegBuffer[1] = 0;
-                SevenSegBuffer[2] = 0;
-                break;
-            case '4':
-                SevenSegBuffer[0] = 10000;
-                SevenSegBuffer[1] = 0;
-                SevenSegBuffer[2] = 0;
-                break;
-            case '5':
-                SevenSegBuffer[0] = 100000;
-                SevenSegBuffer[1] = 0;
-                SevenSegBuffer[2] = 0;
-                break;
-            case '6':
-                SevenSegBuffer[0] = 0;
-                SevenSegBuffer[1] = 1;
-                SevenSegBuffer[2] = 0;
-                break;
-            case '7':
-                SevenSegBuffer[0] = 0;
-                SevenSegBuffer[1] = 10;
-                SevenSegBuffer[2] = 0;
-                break;
-            case '8':
-                SevenSegBuffer[0] = 0;
-                SevenSegBuffer[1] = 100;
-                SevenSegBuffer[2] = 0;
-                break;
-            case '9':
-                SevenSegBuffer[0] = 0;
-                SevenSegBuffer[1] = 1000;
-                SevenSegBuffer[2] = 0;
-                break;
-            case 'A':
-                SevenSegBuffer[0] = 0;
-                SevenSegBuffer[1] = 10000;
-                SevenSegBuffer[2] = 0;
-                break;
-            case 'B':
-                SevenSegBuffer[0] = 0;
-                SevenSegBuffer[1] = 100000;
-                SevenSegBuffer[2] = 0;
-                break;
-            case 'C':
-                SevenSegBuffer[0] = 0;
-                SevenSegBuffer[1] = 0;
-                SevenSegBuffer[2] = 1;
-                break;
-            case 'D':
-                SevenSegBuffer[0] = 0;
-                SevenSegBuffer[1] = 0;
-                SevenSegBuffer[2] = 10;
-                break;
-            case 'E':
-                SevenSegBuffer[0] = 0;
-                SevenSegBuffer[1] = 0;
-                SevenSegBuffer[2] = 100;
-                break;
-            case 'F':
-                SevenSegBuffer[0] = 0;
-                SevenSegBuffer[1] = 0;
-                SevenSegBuffer[2] = 1000;
-                break;
-            case 'T':
-                SevenSegBuffer[0] = 0;
-                SevenSegBuffer[1] = 0;
-                SevenSegBuffer[2] = 10000;
-                if (seqState == SEQ_IDLE) {
+		if (seqState == SEQ_NUMBER) {
+			if (keyPressed >= '0' && keyPressed <= '9') {
+				if (numberOfDigits < 6) {
+					accumulatedNumber = accumulatedNumber * 10 + (keyPressed - '0');
+					numberOfDigits++;
+				}
+			} else {
+				seqState = SEQ_IDLE;
+				numberOfDigits = 0;
+				accumulatedNumber = 0;
+			}
+		} else {
+		switch (keyPressed) {
+			case 'A':
+				SevenSegBuffer[0] = 0;
+				SevenSegBuffer[1] = 10000;
+				SevenSegBuffer[2] = 0;
+				break;
+			case 'B':
+				SevenSegBuffer[0] = 0;
+				SevenSegBuffer[1] = 100000;
+				SevenSegBuffer[2] = 0;
+				break;
+			case 'C':
+				SevenSegBuffer[0] = 0;
+				SevenSegBuffer[1] = 0;
+				SevenSegBuffer[2] = 1;
+				break;
+			case 'E':
+				SevenSegBuffer[0] = 0;
+				SevenSegBuffer[1] = 0;
+				SevenSegBuffer[2] = 100;
+				break;
+			case 'T':
+				if (seqState == SEQ_IDLE) {
 					seqState = SEQ_PRESSED_T;
 				} else {
 					seqState = SEQ_IDLE;
 				}
-                break;
-            case 'P':
-                SevenSegBuffer[0] = 0;
-                SevenSegBuffer[1] = 0;
-                SevenSegBuffer[2] = 100000;
-                break;
-            case '$':
-				SevenSegBuffer[0] = 0;
-				SevenSegBuffer[1] = 0;
-				SevenSegBuffer[2] = 111111;
 				break;
-            case 'L':
-				SevenSegBuffer[0] = 0;
-				SevenSegBuffer[1] = 111111;
-				SevenSegBuffer[2] = 0;
+			case '$':
 				if (seqState == SEQ_PRESSED_T) {
-					//Show total
-					seqState = SEQ_IDLE;
+					seqState = SEQ_PRESSED_T_$;
 				} else {
 					seqState = SEQ_IDLE;
 				}
 				break;
-            default:
-            	seqState = SEQ_IDLE;
-                break;
-        }
-        keyPressed = 0xFF;
+			case 'L':
+				if (seqState == SEQ_PRESSED_T) {
+					seqState = SEQ_PRESSED_T_L;
+				} else {
+					seqState = SEQ_IDLE;
+				}
+				break;
+			case 'D':
+				if (seqState == SEQ_PRESSED_T) {
+					seqState = SEQ_PRESSED_T_F3;
+				} else {
+					seqState = SEQ_IDLE;
+				}
+				break;
+			case 'F':
+				if (seqState == SEQ_PRESSED_T) {
+					seqState = SEQ_PRESSED_T_F4;
+				} else {
+					seqState = SEQ_IDLE;
+				}
+				break;
+			default:
+				if (keyPressed >= '0' && keyPressed <= '9') {
+					seqState = SEQ_NUMBER;
+					accumulatedNumber = keyPressed - '0';
+					numberOfDigits = 1;
+				} else {
+					seqState = SEQ_IDLE;
+				}
+				break;
+			}
+		}
+	keyPressed = 0xFF;
     }
 }
-
+void KeyLogic_Action() {
+    switch (seqState) {
+        case SEQ_IDLE:
+            SevenSegBuffer[0] = 0;
+            SevenSegBuffer[1] = 0;
+            SevenSegBuffer[2] = 0;
+            break;
+        case SEQ_PRESSED_T:
+            SevenSegBuffer[0] = 0;
+            SevenSegBuffer[1] = 0;
+            SevenSegBuffer[2] = 999999;
+            break;
+        case SEQ_PRESSED_T_$:
+            SevenSegBuffer[0] = 0;
+            SevenSegBuffer[1] = 0;
+            SevenSegBuffer[2] = 111111;
+            break;
+        case SEQ_PRESSED_T_L:
+            SevenSegBuffer[0] = 0;
+            SevenSegBuffer[1] = 123456;
+            SevenSegBuffer[2] = 0;
+            break;
+        case SEQ_PRESSED_T_F3:
+            SevenSegBuffer[0] = 333333;
+            SevenSegBuffer[1] = 0;
+            SevenSegBuffer[2] = 0;
+            break;
+        case SEQ_PRESSED_T_F4:
+            SevenSegBuffer[0] = 444444;
+            SevenSegBuffer[1] = 0;
+            SevenSegBuffer[2] = 0;
+            break;
+        case SEQ_NUMBER:
+			SevenSegBuffer[0] = accumulatedNumber;
+			SevenSegBuffer[1] = 0;
+			SevenSegBuffer[2] = 0;
+			break;
+        default:
+            SevenSegBuffer[0] = 0;
+            SevenSegBuffer[1] = 0;
+            SevenSegBuffer[2] = 0;
+            break;
+    }
+}

@@ -15,4 +15,5 @@ extern uint8_t keyPressed;
 void KeyPad_Init(void);
 uint8_t KeyPad_Scan(void);
 void KeyLogic();
+void KeyLogic_Action();
 #endif /* __KEYPAD_H */
