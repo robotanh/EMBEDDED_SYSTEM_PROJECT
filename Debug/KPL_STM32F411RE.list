@@ -39,13 +39,13 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY, DEBUGGING, OCTETS
  17 .debug_line   00016b6e  00000000  00000000  0003c55a  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 18 .debug_str    00098293  00000000  00000000  000530c8  2**0
+ 18 .debug_str    0009829c  00000000  00000000  000530c8  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 19 .comment      00000043  00000000  00000000  000eb35b  2**0
+ 19 .comment      00000043  00000000  00000000  000eb364  2**0
                   CONTENTS, READONLY
- 20 .debug_frame  0000564c  00000000  00000000  000eb3a0  2**2
+ 20 .debug_frame  0000564c  00000000  00000000  000eb3a8  2**2
                   CONTENTS, READONLY, DEBUGGING, OCTETS
- 21 .debug_line_str 0000004e  00000000  00000000  000f09ec  2**0
+ 21 .debug_line_str 0000004e  00000000  00000000  000f09f4  2**0
                   CONTENTS, READONLY, DEBUGGING, OCTETS
 
 Disassembly of section .text:
@@ -1805,7 +1805,7 @@ void UpdateDisplayBuffer(uint32_t* buffer, uint8_t scan_state, uint8_t bufferInd
  8000efc:	440b      	add	r3, r1
  8000efe:	22ff      	movs	r2, #255	@ 0xff
  8000f00:	701a      	strb	r2, [r3, #0]
-    displayBuffer[bufferIndex][1] = digitMapWithDP[curr_digit[2]];
+    displayBuffer[bufferIndex][1] = digitMapWithOutDP[curr_digit[2]];
  8000f02:	68bb      	ldr	r3, [r7, #8]
  8000f04:	3302      	adds	r3, #2
  8000f06:	781b      	ldrb	r3, [r3, #0]
@@ -1831,7 +1831,7 @@ void UpdateDisplayBuffer(uint32_t* buffer, uint8_t scan_state, uint8_t bufferInd
  8000f2c:	3302      	adds	r3, #2
  8000f2e:	7bfa      	ldrb	r2, [r7, #15]
  8000f30:	701a      	strb	r2, [r3, #0]
-    displayBuffer[bufferIndex][3] = digitMapWithDP[curr_digit[1]];
+    displayBuffer[bufferIndex][3] = digitMapWithOutDP[curr_digit[1]];
  8000f32:	68bb      	ldr	r3, [r7, #8]
  8000f34:	3301      	adds	r3, #1
  8000f36:	781b      	ldrb	r3, [r3, #0]
@@ -1847,7 +1847,7 @@ void UpdateDisplayBuffer(uint32_t* buffer, uint8_t scan_state, uint8_t bufferInd
  8000f4a:	3303      	adds	r3, #3
  8000f4c:	4602      	mov	r2, r0
  8000f4e:	701a      	strb	r2, [r3, #0]
-    displayBuffer[bufferIndex][4] = digitMapWithDP[curr_digit[0]];
+    displayBuffer[bufferIndex][4] = digitMapWithOutDP[curr_digit[0]];
  8000f50:	68bb      	ldr	r3, [r7, #8]
  8000f52:	781b      	ldrb	r3, [r3, #0]
  8000f54:	4619      	mov	r1, r3

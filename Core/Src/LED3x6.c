@@ -8,20 +8,8 @@
 #include "LED3x6.h"
 #include "SPI_shift.h"
 #include "stm32f4xx_hal.h"
-uint8_t digitMap[10] = {
-    0b11000000, // 0
-    0b01111110, // 1
-    0b10100100, // 2
-    0b10110000, // 3
-    0b10011001, // 4
-    0b10010010, // 5
-    0b10000010, // 6
-    0b01111000, // 7
-    0b10000000, // 8
-    0b10010000  // 9
-};
 
-uint8_t digitMapWithDP[10] = {
+uint8_t digitMapWithOutDP[10] = {
     0b11000000, // 0 without DP
     0b11111001, // 1 without DP
     0b10100100, // 2 without DP
@@ -34,6 +22,18 @@ uint8_t digitMapWithDP[10] = {
     0b10010000  // 9 without DP
 };
 
+uint8_t digitMapWithDP[10] = {
+    0b01000000, // 0 with DP
+    0b01111001, // 1 with DP
+    0b00100100, // 2 with DP
+    0b00110000, // 3 with DP
+    0b00011001, // 4 with DP
+    0b00010010, // 5 with DP
+    0b00000010, // 6 with DP
+    0b01111000, // 7 with DP
+    0b00000000, // 8 with DP
+    0b00010000  // 9 with DP
+};
 volatile uint8_t SevenSegScanState = 0;
 uint32_t SevenSegBuffer[3] = {123456, 654321, 987654};
 uint8_t displayBuffer[2][5];  // Double buffer
@@ -103,10 +103,10 @@ void UpdateDisplayBuffer(uint32_t* buffer, uint8_t scan_state, uint8_t bufferInd
             break;
     }
     displayBuffer[bufferIndex][0] = 0b11111111; //skip bít
-    displayBuffer[bufferIndex][1] = digitMapWithDP[curr_digit[2]];
+    displayBuffer[bufferIndex][1] = digitMapWithOutDP[curr_digit[2]];
     displayBuffer[bufferIndex][2] = curr_scan;
-    displayBuffer[bufferIndex][3] = digitMapWithDP[curr_digit[1]];
-    displayBuffer[bufferIndex][4] = digitMapWithDP[curr_digit[0]];
+    displayBuffer[bufferIndex][3] = digitMapWithOutDP[curr_digit[1]];
+    displayBuffer[bufferIndex][4] = digitMapWithOutDP[curr_digit[0]];
 }
 
 void SevenSegLEDsScan() {
