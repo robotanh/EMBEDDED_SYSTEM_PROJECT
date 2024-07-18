@@ -34,6 +34,8 @@ extern "C" {
 extern uint32_t SevenSegBuffer[3];
 extern uint32_t password;
 extern uint32_t totalLiters;
+
+ extern int LEDPointFlag; // 0 -> 5 to choose which LED has point
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/

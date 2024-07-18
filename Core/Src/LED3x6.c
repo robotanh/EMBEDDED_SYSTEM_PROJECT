@@ -39,6 +39,7 @@ uint32_t SevenSegBuffer[3] = {123456, 654321, 987654};
 uint8_t displayBuffer[2][5];  // Double buffer
 volatile uint8_t currentBufferIndex = 0;
 
+
 uint8_t* SevenSegLEDsHandler(uint32_t* buffer, uint8_t scan_state) {
     static uint8_t output[3];
     switch (scan_state) {
@@ -102,11 +103,31 @@ void UpdateDisplayBuffer(uint32_t* buffer, uint8_t scan_state, uint8_t bufferInd
             curr_scan = 0b11111111;
             break;
     }
-    displayBuffer[bufferIndex][0] = 0b11111111; //skip bít
-    displayBuffer[bufferIndex][1] = digitMapWithOutDP[curr_digit[2]];
-    displayBuffer[bufferIndex][2] = curr_scan;
-    displayBuffer[bufferIndex][3] = digitMapWithOutDP[curr_digit[1]];
-    displayBuffer[bufferIndex][4] = digitMapWithOutDP[curr_digit[0]];
+    if(LEDPointFlag >=0 && LEDPointFlag <=5){
+    	if (scan_state == LEDPointFlag){
+    		displayBuffer[bufferIndex][0] = 0b11111111; //skip bít
+			displayBuffer[bufferIndex][1] = digitMapWithOutDP[curr_digit[2]];
+			displayBuffer[bufferIndex][2] = curr_scan;
+			displayBuffer[bufferIndex][3] = digitMapWithDP[curr_digit[1]]; //Add point to second row
+			displayBuffer[bufferIndex][4] = digitMapWithOutDP[curr_digit[0]];
+    	}
+    	else
+    	{
+    		displayBuffer[bufferIndex][0] = 0b11111111; //skip bít
+    		displayBuffer[bufferIndex][1] = digitMapWithOutDP[curr_digit[2]];
+    		displayBuffer[bufferIndex][2] = curr_scan;
+    		displayBuffer[bufferIndex][3] = digitMapWithOutDP[curr_digit[1]];
+    		displayBuffer[bufferIndex][4] = digitMapWithOutDP[curr_digit[0]];
+    	}
+    }
+    else
+    {
+		displayBuffer[bufferIndex][0] = 0b11111111; //skip bít
+		displayBuffer[bufferIndex][1] = digitMapWithOutDP[curr_digit[2]];
+		displayBuffer[bufferIndex][2] = curr_scan;
+		displayBuffer[bufferIndex][3] = digitMapWithOutDP[curr_digit[1]];
+		displayBuffer[bufferIndex][4] = digitMapWithOutDP[curr_digit[0]];
+    }
 }
 
 void SevenSegLEDsScan() {

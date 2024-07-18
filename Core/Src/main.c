@@ -49,6 +49,10 @@ SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
 
 uint32_t password = 345;
+uint32_t totalLiters = 68123450;
+int LEDPointFlag = 6; //No LEDs have point
+
+
 /* Definitions for Led3x6Task */
 osThreadId_t Led3x6TaskHandle;
 const osThreadAttr_t Led3x6Task_attributes = {
