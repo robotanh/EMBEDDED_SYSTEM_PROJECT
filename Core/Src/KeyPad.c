@@ -49,6 +49,7 @@ SequenceState seqState = SEQ_IDLE;
 void KeyPad_Init(void) {
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9, GPIO_PIN_RESET);
 }
+
 uint8_t ScanColumns(uint8_t row) {
     switch (row) {
         case 0:
@@ -120,6 +121,7 @@ uint8_t KeyPad_Scan(void) {
 void formatTotalLiters(uint32_t total, uint32_t* buffer1, uint32_t* buffer2)
 {
 	if (total < 100000000) {
+
 		* buffer1 = total / 1000000;
 		* buffer2 = total % 1000000;
 		LEDPointFlag = 3;
@@ -176,131 +178,159 @@ void KeyLogic() {
     }
 
     if (keyPressed != 0xFF) {
-		if (seqState == SEQ_NUMBER) {
-			if (keyPressed >= '0' && keyPressed <= '9') {
-				if (numberOfDigits < 6) {
-					accumulatedNumber = accumulatedNumber * 10 + (keyPressed - '0');
-					numberOfDigits++;
-				}
-			} else {
-				seqState = SEQ_IDLE;
-				numberOfDigits = 0;
-				accumulatedNumber = 0;
-			}
-		} else {
-		switch (keyPressed) {
-			case 'A':
-				SevenSegBuffer[0] = 0;
-				SevenSegBuffer[1] = 10000;
-				SevenSegBuffer[2] = 0;
-				break;
-			case 'B':
-				SevenSegBuffer[0] = 0;
-				SevenSegBuffer[1] = 100000;
-				SevenSegBuffer[2] = 0;
-				break;
-			case 'C':
-				SevenSegBuffer[0] = 0;
-				SevenSegBuffer[1] = 0;
-				SevenSegBuffer[2] = 1;
-				break;
-			case 'E':
-				SevenSegBuffer[0] = 0;
-				SevenSegBuffer[1] = 0;
-				SevenSegBuffer[2] = 100;
-				break;
-			case 'T':
-				if (seqState == SEQ_IDLE) {
-					seqState = SEQ_PRESSED_T;
-				} else {
-					seqState = SEQ_IDLE;
-				}
-				break;
-			case '$':
-				if (seqState == SEQ_PRESSED_T) {
-					seqState = SEQ_PRESSED_T_$;
-				} else {
-					seqState = SEQ_IDLE;
-				}
-				break;
-			case 'L':
-				if (seqState == SEQ_PRESSED_T) {
-					seqState = SEQ_PRESSED_T_L;
-				} else {
-					seqState = SEQ_IDLE;
-				}
-				break;
-			case 'D':
-				if (seqState == SEQ_PRESSED_T) {
-					seqState = SEQ_PRESSED_T_F3;
-				} else {
-					seqState = SEQ_IDLE;
-				}
-				break;
-			case 'F':
-				if (seqState == SEQ_PRESSED_T) {
-					seqState = SEQ_PRESSED_T_F4;
-				} else {
-					seqState = SEQ_IDLE;
-				}
-				break;
-			default:
-				if (keyPressed >= '0' && keyPressed <= '9') {
-					seqState = SEQ_NUMBER;
-					accumulatedNumber = keyPressed - '0';
-					numberOfDigits = 1;
-				} else {
-					seqState = SEQ_IDLE;
-				}
-				break;
-			}
-		}
-	keyPressed = 0xFF;
+        if (seqState == SEQ_NUMBER) {
+            if (keyPressed >= '0' && keyPressed <= '9') {
+                if (numberOfDigits < 6) {
+                    accumulatedNumber = accumulatedNumber * 10 + (keyPressed - '0');
+                    numberOfDigits++;
+                }
+            } else {
+                seqState = SEQ_IDLE;
+                numberOfDigits = 0;
+                accumulatedNumber = 0;
+            }
+        } else {
+            switch (keyPressed) {
+                case 'A':
+                    snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06d", 0);
+                    snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06d", 10000);
+                    snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "%06d", 0);
+                    break;
+                case 'B':
+                    snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06d", 0);
+                    snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06d", 100000);
+                    snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "%06d", 0);
+                    break;
+                case 'C':
+                    snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06d", 0);
+                    snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06d", 0);
+                    snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "%06d", 1);
+                    break;
+                case 'E':
+                    snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06d", 0);
+                    snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06d", 0);
+                    snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "%06d", 100);
+                    break;
+                case 'T':
+                    if (seqState == SEQ_IDLE) {
+                        seqState = SEQ_PRESSED_T;
+                    } else {
+                        seqState = SEQ_IDLE;
+                    }
+                    break;
+                case '$':
+                    if (seqState == SEQ_PRESSED_T) {
+                        seqState = SEQ_PRESSED_T_$;
+                    } else {
+                        seqState = SEQ_IDLE;
+                    }
+                    break;
+                case 'L':
+                    if (seqState == SEQ_PRESSED_T) {
+                        seqState = SEQ_PRESSED_T_L;
+                    } else {
+                        seqState = SEQ_IDLE;
+                    }
+                    break;
+                case 'D':
+                    if (seqState == SEQ_PRESSED_T) {
+                        seqState = SEQ_PRESSED_T_F3;
+                    } else {
+                        seqState = SEQ_IDLE;
+                    }
+                    break;
+                case 'F':
+                    if (seqState == SEQ_PRESSED_T) {
+                        seqState = SEQ_PRESSED_T_F4;
+                    } else {
+                        seqState = SEQ_IDLE;
+                    }
+                    break;
+                default:
+                    if (keyPressed >= '0' && keyPressed <= '9') {
+                        seqState = SEQ_NUMBER;
+                        accumulatedNumber = keyPressed - '0';
+                        numberOfDigits = 1;
+                    } else {
+                        seqState = SEQ_IDLE;
+                    }
+                    break;
+            }
+        }
+        keyPressed = 0xFF;
     }
 }
+
 void KeyLogic_Action() {
+    char buffer[7];
     switch (seqState) {
         case SEQ_IDLE:
-            SevenSegBuffer[0] = 0;
-            SevenSegBuffer[1] = 0;
-            SevenSegBuffer[2] = 0;
+            snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06d", 0);
+            snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06d", 0);
+            snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "%06d", 0);
             break;
         case SEQ_PRESSED_T:
-            SevenSegBuffer[0] = 0;
-            SevenSegBuffer[1] = 0;
-            SevenSegBuffer[2] = 999999;
+            snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06d", 0);
+            snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06d", 0);
+            snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "%06d", 999999);
             break;
         case SEQ_PRESSED_T_$:
-            SevenSegBuffer[0] = 0;
-            SevenSegBuffer[1] = 0;
-            SevenSegBuffer[2] = 111111;
+            snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06d", 0);
+            snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06d", 0);
+            snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "%06d", 111111);
             break;
         case SEQ_PRESSED_T_L:
-        	formatTotalLiters(totalLiters, &row1, &row2);
-            SevenSegBuffer[0] = row1;
-            SevenSegBuffer[1] = row2;
-            SevenSegBuffer[2] = 0;
+            // Format the total liters into two parts
+            formatTotalLiters(totalLiters, &row1, &row2);
+
+            // Ensure the combined string fits into the buffer
+            char row1Str[7]; // Buffer to hold formatted row1 string
+            snprintf(row1Str, sizeof(row1Str), "%06ld", row1);
+
+            // Combine "L.. " with the last two digits of row1
+            char combinedStr[8]; // Buffer to hold combined string "L.. " and last two digits of row1
+            snprintf(combinedStr, sizeof(combinedStr), "L.. %02ld", row1 % 100); // Extract last two digits of row1
+
+            // Fill SevenSegBuffer[0] with combinedStr and pad with spaces if necessary
+            for (int i = 0; i < 6; ++i) {
+                if (i < strlen(combinedStr)) {
+                    SevenSegBuffer[0][i] = combinedStr[i];
+                } else {
+                    SevenSegBuffer[0][i] = ' '; // Pad with spaces
+                }
+            }
+
+
+            snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06ld", row2);
+            snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "Total");
+
+
+            LEDPointFlag = 3;
             break;
+
+
+
         case SEQ_PRESSED_T_F3:
-            SevenSegBuffer[0] = 333333;
-            SevenSegBuffer[1] = 0;
-            SevenSegBuffer[2] = 0;
+            snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06d", 333333);
+            snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06d", 0);
+            snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "%06d", 0);
             break;
         case SEQ_PRESSED_T_F4:
-            SevenSegBuffer[0] = 444444;
-            SevenSegBuffer[1] = 0;
-            SevenSegBuffer[2] = 0;
+            snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06d", 444444);
+            snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06d", 0);
+            snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "%06d", 0);
             break;
         case SEQ_NUMBER:
-			SevenSegBuffer[0] = accumulatedNumber;
-			SevenSegBuffer[1] = 0;
-			SevenSegBuffer[2] = 0;
-        	LEDPointFlag = 6;
-			break;
+            snprintf(buffer, sizeof(buffer), "%06d", accumulatedNumber);
+            snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%s", buffer);
+            snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06d", 0);
+            snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "%06d", 0);
+            LEDPointFlag = -1;
+            break;
         default:
-            SevenSegBuffer[0] = 0;
-            SevenSegBuffer[1] = 0;
-            SevenSegBuffer[2] = 0;
+            snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06d", 0);
+            snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06d", 0);
+            snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "%06d", 0);
             break;
     }
 }

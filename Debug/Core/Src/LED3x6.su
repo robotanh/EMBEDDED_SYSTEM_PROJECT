@@ -1,3 +1,4 @@
-../Core/Src/LED3x6.c:43:10:SevenSegLEDsHandler	16	static
-../Core/Src/LED3x6.c:80:6:UpdateDisplayBuffer	24	static
-../Core/Src/LED3x6.c:133:6:SevenSegLEDsScan	16	static,ignoring_inline_asm
+../Core/Src/LED3x6.c:49:9:CharToSegment	16	static
+../Core/Src/LED3x6.c:61:10:SevenSegLEDsHandler	24	static
+../Core/Src/LED3x6.c:78:6:UpdateDisplayBuffer	24	static
+../Core/Src/LED3x6.c:128:6:SevenSegLEDsScan	16	static,ignoring_inline_asm

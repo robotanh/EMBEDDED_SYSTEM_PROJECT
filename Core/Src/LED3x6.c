@@ -34,50 +34,48 @@ uint8_t digitMapWithDP[10] = {
     0b00000000, // 8 with DP
     0b00010000  // 9 with DP
 };
+
+uint8_t specialCharMap[2] = {
+    0b11000111, // 'L'
+    0b01111111  // '.'
+};
 volatile uint8_t SevenSegScanState = 0;
-uint32_t SevenSegBuffer[3] = {123456, 654321, 987654};
+//uint32_t SevenSegBuffer[3] = {123456, 654321, 987654};
+char SevenSegBuffer[3][7] = {"123456", "654321", "987654"};
 uint8_t displayBuffer[2][5];  // Double buffer
 volatile uint8_t currentBufferIndex = 0;
 
 
-uint8_t* SevenSegLEDsHandler(uint32_t* buffer, uint8_t scan_state) {
+uint8_t CharToSegment(char c) {
+    if (c >= '0' && c <= '9') {
+        return digitMapWithOutDP[c - '0'];
+    } else if (c == 'L') {
+        return specialCharMap[0];
+    } else if (c == '.') {
+        return specialCharMap[1];
+    } else {
+        return 0b11111111; // Blank
+    }
+}
+
+uint8_t* SevenSegLEDsHandler(char buffer[3][7], uint8_t scan_state) {
     static uint8_t output[3];
-    switch (scan_state) {
-        case 0:
-            output[0] = buffer[0] % 10;
-            output[1] = buffer[1] % 10;
-            output[2] = buffer[2] % 10;
-            break;
-        case 1:
-            output[0] = (buffer[0] / 10) % 10;
-            output[1] = (buffer[1] / 10) % 10;
-            output[2] = (buffer[2] / 10) % 10;
-            break;
-        case 2:
-            output[0] = (buffer[0] / 100) % 10;
-            output[1] = (buffer[1] / 100) % 10;
-            output[2] = (buffer[2] / 100) % 10;
-            break;
-        case 3:
-            output[0] = (buffer[0] / 1000) % 10;
-            output[1] = (buffer[1] / 1000) % 10;
-            output[2] = (buffer[2] / 1000) % 10;
-            break;
-        case 4:
-            output[0] = (buffer[0] / 10000) % 10;
-            output[1] = (buffer[1] / 10000) % 10;
-            output[2] = (buffer[2] / 10000) % 10;
-            break;
-        case 5:
-            output[0] = (buffer[0] / 100000) % 10;
-            output[1] = (buffer[1] / 100000) % 10;
-            output[2] = (buffer[2] / 100000) % 10;
-            break;
+    for (int i = 0; i < 3; i++) {
+        int len = strlen(buffer[i]);
+        if (scan_state < 6) {
+            if (scan_state < len) {
+                output[i] = CharToSegment(buffer[i][len - 1 - scan_state]);
+            } else {
+                output[i] = 0b11111111; // Blank
+            }
+        } else {
+            output[i] = 0b11111111; // Blank
+        }
     }
     return output;
 }
 
-void UpdateDisplayBuffer(uint32_t* buffer, uint8_t scan_state, uint8_t bufferIndex) {
+void UpdateDisplayBuffer(char buffer[3][7], uint8_t scan_state, uint8_t bufferIndex) {
     uint8_t* curr_digit = SevenSegLEDsHandler(buffer, scan_state);
     uint8_t curr_scan;
     switch (scan_state) {
@@ -103,32 +101,29 @@ void UpdateDisplayBuffer(uint32_t* buffer, uint8_t scan_state, uint8_t bufferInd
             curr_scan = 0b11111111;
             break;
     }
-    if(LEDPointFlag >=0 && LEDPointFlag <=5){
-    	if (scan_state == LEDPointFlag){
-    		displayBuffer[bufferIndex][0] = 0b11111111; //skip bít
-			displayBuffer[bufferIndex][1] = digitMapWithOutDP[curr_digit[2]];
-			displayBuffer[bufferIndex][2] = curr_scan;
-			displayBuffer[bufferIndex][3] = digitMapWithDP[curr_digit[1]]; //Add point to second row
-			displayBuffer[bufferIndex][4] = digitMapWithOutDP[curr_digit[0]];
-    	}
-    	else
-    	{
-    		displayBuffer[bufferIndex][0] = 0b11111111; //skip bít
-    		displayBuffer[bufferIndex][1] = digitMapWithOutDP[curr_digit[2]];
-    		displayBuffer[bufferIndex][2] = curr_scan;
-    		displayBuffer[bufferIndex][3] = digitMapWithOutDP[curr_digit[1]];
-    		displayBuffer[bufferIndex][4] = digitMapWithOutDP[curr_digit[0]];
-    	}
-    }
-    else
-    {
-		displayBuffer[bufferIndex][0] = 0b11111111; //skip bít
-		displayBuffer[bufferIndex][1] = digitMapWithOutDP[curr_digit[2]];
-		displayBuffer[bufferIndex][2] = curr_scan;
-		displayBuffer[bufferIndex][3] = digitMapWithOutDP[curr_digit[1]];
-		displayBuffer[bufferIndex][4] = digitMapWithOutDP[curr_digit[0]];
+    if (LEDPointFlag >= 0 && LEDPointFlag <= 5) {
+        if (scan_state == LEDPointFlag) {
+            displayBuffer[bufferIndex][0] = 0b11111111; // Skip bit
+            displayBuffer[bufferIndex][1] = curr_digit[2];
+            displayBuffer[bufferIndex][2] = curr_scan;
+            displayBuffer[bufferIndex][3] = curr_digit[1] & 0b01111111; // Add DP
+            displayBuffer[bufferIndex][4] = curr_digit[0];
+        } else {
+            displayBuffer[bufferIndex][0] = 0b11111111; // Skip bit
+            displayBuffer[bufferIndex][1] = curr_digit[2];
+            displayBuffer[bufferIndex][2] = curr_scan;
+            displayBuffer[bufferIndex][3] = curr_digit[1];
+            displayBuffer[bufferIndex][4] = curr_digit[0];
+        }
+    } else {
+        displayBuffer[bufferIndex][0] = 0b11111111; // Skip bit
+        displayBuffer[bufferIndex][1] = curr_digit[2];
+        displayBuffer[bufferIndex][2] = curr_scan;
+        displayBuffer[bufferIndex][3] = curr_digit[1];
+        displayBuffer[bufferIndex][4] = curr_digit[0];
     }
 }
+
 
 void SevenSegLEDsScan() {
     uint8_t bufferIndex = (currentBufferIndex + 1) % 2;

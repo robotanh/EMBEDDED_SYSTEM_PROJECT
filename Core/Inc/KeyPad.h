@@ -10,6 +10,7 @@
 #include "stm32f4xx_hal.h"
 #include "cmsis_os.h"
 #include "main.h"
+#include <stdio.h>
 extern uint8_t keyPressed;
 
 void KeyPad_Init(void);
