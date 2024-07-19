@@ -49,7 +49,8 @@ SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
 
 uint32_t password = 345;
-uint32_t totalLiters = 68123450;
+long unsigned int totalLiters = 25173777; //theo đơn vị ml tức là 1000 = 1 lít
+long unsigned int totalLitersShift = 123456999;   //lít trong ca, có thể được reset khi giao ca
 int LEDPointFlag = 6; //No LEDs have point
 
 

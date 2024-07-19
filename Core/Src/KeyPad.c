@@ -118,7 +118,8 @@ uint8_t KeyPad_Scan(void) {
     return 0xFF;  // No key pressed
 }
 
-void formatTotalLiters(uint32_t total, uint32_t* buffer1, uint32_t* buffer2)
+// T + L pressed show total from beginning
+void formatTotalLiters(long unsigned int total, uint32_t* buffer1, uint32_t* buffer2)
 {
 	if (total < 100000000) {
 
@@ -128,8 +129,23 @@ void formatTotalLiters(uint32_t total, uint32_t* buffer1, uint32_t* buffer2)
 
 	} else {
 		* buffer1 = total / 100000000;
+		* buffer2 = (total % 100000000 ) /100;
+		LEDPointFlag = 1;
+	}
+}
+// T + $ pressed show total per shift
+void formatTotalLitersShift(long unsigned int total, uint32_t* buffer1, uint32_t* buffer2)
+{
+	if (total < 1000000000) {
+
+		* buffer1 = total / 1000000;
+		* buffer2 = total % 1000000;
+		LEDPointFlag = 3;
+
+	} else {
+		* buffer1 =0;
 		* buffer2 = 0;
-		LEDPointFlag = 2;
+		LEDPointFlag = -11;
 	}
 }
 
@@ -275,9 +291,28 @@ void KeyLogic_Action() {
             snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "%06d", 999999);
             break;
         case SEQ_PRESSED_T_$:
-            snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06d", 0);
-            snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06d", 0);
-            snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "%06d", 111111);
+        	 // Format the total liters into two parts
+			formatTotalLitersShift(totalLitersShift, &row1, &row2);
+
+			// Ensure the combined string fits into the buffer
+			char row1StrShift[7]; // Buffer to hold formatted row1 string
+			snprintf(row1StrShift, sizeof(row1StrShift), "%06ld", row1);
+
+			// Combine "L.. " with the last two digits of row1
+			char combinedStrShift[8]; // Buffer to hold combined string "L.. " and last two digits of row1
+			snprintf(combinedStrShift, sizeof(combinedStrShift), "SH.%04ld", row1 % 10000); // Extract last two digits of row1
+
+			// Fill SevenSegBuffer[0] with combinedStr and pad with spaces if necessary
+			for (int i = 0; i < 6; ++i) {
+				if (i < strlen(combinedStrShift)) {
+					SevenSegBuffer[0][i] = combinedStrShift[i];
+				} else {
+					SevenSegBuffer[0][i] = ' '; // Pad with spaces
+				}
+			}
+			snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06ld", row2);
+			snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "SHIFT ");
+
             break;
         case SEQ_PRESSED_T_L:
             // Format the total liters into two parts
@@ -289,7 +324,7 @@ void KeyLogic_Action() {
 
             // Combine "L.. " with the last two digits of row1
             char combinedStr[8]; // Buffer to hold combined string "L.. " and last two digits of row1
-            snprintf(combinedStr, sizeof(combinedStr), "L.. %02ld", row1 % 100); // Extract last two digits of row1
+            snprintf(combinedStr, sizeof(combinedStr), "L.%04ld", row1 % 10000); // Extract last two digits of row1
 
             // Fill SevenSegBuffer[0] with combinedStr and pad with spaces if necessary
             for (int i = 0; i < 6; ++i) {
@@ -302,10 +337,10 @@ void KeyLogic_Action() {
 
 
             snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06ld", row2);
-            snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "TOTAL");
+            snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "TOTAL ");
 
 
-            LEDPointFlag = 3;
+
             break;
 
 
