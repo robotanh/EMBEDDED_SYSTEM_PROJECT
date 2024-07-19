@@ -35,16 +35,20 @@ uint8_t digitMapWithDP[10] = {
     0b00010000  // 9 with DP
 };
 
-uint8_t specialCharMap[9] = {
+uint8_t specialCharMap[13] = {
     0b11000111, // 'L'
     0b01111111, // '.'
     0b11111000, // 'T'
-    0b11000000, // '0'
+    0b11000000, // 'O'
     0b10001000, // 'A'
     0b10010010, // 'S'
     0b10001001, // 'H'
     0b11001111, // 'I'
-    0b10001110  // 'F'
+    0b10001110, // 'F'
+    0b10110001, // 'C'
+    0b10000110, // 'E'
+    0b11000001, // 'U'
+    0b11001000, // 'N'
 };
 
 
@@ -76,6 +80,14 @@ uint8_t CharToSegment(char c) {
         return specialCharMap[7];
     } else if (c == 'F') {
         return specialCharMap[8];
+    } else if (c == 'C') {
+        return specialCharMap[9];
+    } else if (c == 'E') {
+        return specialCharMap[10];
+    } else if (c == 'U') {
+        return specialCharMap[11];
+    } else if (c == 'N') {
+        return specialCharMap[12];
     } else {
         return 0b11111111; // Blank
     }
