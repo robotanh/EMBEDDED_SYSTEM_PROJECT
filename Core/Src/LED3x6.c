@@ -46,7 +46,7 @@ uint8_t specialCharMap[15] = {
     0b11001111, // 'I'
     0b10001110, // 'F'
 	0b10111100,	// 'G'
-	0b11001110,	// 'P'
+	0b10001100,	// 'P'
     0b10110001, // 'C'
     0b10000110, // 'E'
     0b11000001, // 'U'
@@ -82,14 +82,18 @@ uint8_t CharToSegment(char c) {
         return specialCharMap[7];
     } else if (c == 'F') {
         return specialCharMap[8];
-    } else if (c == 'C') {
+    } else if (c == 'G') {
         return specialCharMap[9];
-    } else if (c == 'E') {
+    } else if (c == 'P') {
         return specialCharMap[10];
-    } else if (c == 'U') {
+    } else if (c == 'C') {
         return specialCharMap[11];
-    } else if (c == 'N') {
+    } else if (c == 'E') {
         return specialCharMap[12];
+    } else if (c == 'U') {
+        return specialCharMap[13];
+    } else if (c == 'N') {
+        return specialCharMap[14];
     } else {
         return 0b11111111; // Blank
     }

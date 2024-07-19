@@ -37,6 +37,7 @@ typedef enum {
 	SEQ_DISP_PRICE,
 	SEQ_ENTER_OLD_PASSWORD,
 	SEQ_ENTER_NEW_PASSWORD,
+	SEQ_NUMBER,
 /////////////P KEY//////////////
 	SEQ_PRESSED_P,
 	SEQ_PRESSED_P_NUM,
@@ -153,7 +154,7 @@ void formatTotalLitersShift(long unsigned int total, uint32_t* buffer1, uint32_t
 	} else {
 		* buffer1 =0;
 		* buffer2 = 0;
-		LEDPointFlag = -11;
+		LEDPointFlag = -1;
 	}
 }
 
@@ -223,10 +224,7 @@ void KeyLogic() {
 				break;
 /////////////////////////////////////////////////////KEY E/////////////////////////////////////////////////////////
 			case 'E':
-				if(seqState == SEQ_IDLE){
-					seqState = SEQ_DISP_PRICE;
-				}
-				else if (seqState == SEQ_PRESSED_P_NUM&&
+				if (seqState == SEQ_PRESSED_P_NUM&&
 					accumulatedNumber==password) {
 					seqState = SEQ_PRESSED_P_PSWRD_SETPRICE;
 					numberOfDigits = 0;
@@ -327,11 +325,19 @@ void KeyLogic() {
 					}else if (seqState == SEQ_PRESSED_P_NUM ||
 							seqState == SEQ_PRESSED_P_PSWRD_SETPRICE||
 							seqState == SEQ_ENTER_OLD_PASSWORD ||
-							seqState == SEQ_ENTER_NEW_PASSWORD) {
+							seqState == SEQ_ENTER_NEW_PASSWORD ||
+							seqState == SEQ_NUMBER
+							) {
 						if (numberOfDigits < 6) {
 							accumulatedNumber = accumulatedNumber * 10 + (keyPressed - '0');
 							numberOfDigits++;
 						}
+
+					}
+					else{
+						seqState = SEQ_NUMBER;
+						accumulatedNumber = keyPressed - '0';
+						numberOfDigits = 1;
 					}
 				}else{
 					seqState = SEQ_IDLE;
@@ -355,8 +361,9 @@ void KeyLogic_Action() {
             break;
         case SEQ_DISP_PRICE:
         	snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "GIA   ");
-			snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06d", currPrice);
+			snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06ld", currPrice);
 			snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "%06d", 0);
+			break;
         case SEQ_ENTER_OLD_PASSWORD:
             snprintf(buffer, sizeof(buffer), "%06ld", accumulatedNumber);
             snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%s", buffer);
@@ -372,17 +379,20 @@ void KeyLogic_Action() {
             LEDPointFlag = -1;
             break;
         case SEQ_PRESSED_P:
-        	snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06d", accumulatedNumber);
+        	snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06ld", accumulatedNumber);
 			snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06d", 0);
 			snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "P     ");
+			break;
         case SEQ_PRESSED_P_NUM:
-            snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06d", accumulatedNumber);
+            snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06ld", accumulatedNumber);
             snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06d", 0);
             snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "P88888");
+            break;
         case SEQ_PRESSED_P_PSWRD_SETPRICE:
-            snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06d", accumulatedNumber);
+            snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06ld", accumulatedNumber);
             snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06d", 0);
             snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "GIA   ");
+            break;
         case SEQ_PRESSED_T:
             snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06d", 0);
             snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06d", 0);
@@ -441,8 +451,6 @@ void KeyLogic_Action() {
 
             break;
 
-
-
         case SEQ_PRESSED_T_F3:
             snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06d", 333333);
             snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06d", 0);
@@ -453,6 +461,13 @@ void KeyLogic_Action() {
             snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06d", 0);
             snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "%06d", 0);
             break;
+        case SEQ_NUMBER:
+			snprintf(buffer, sizeof(buffer), "%06ld", accumulatedNumber);
+			snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%s", buffer);
+			snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06d", 0);
+			snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "%06d", 0);
+			LEDPointFlag = -1;
+			break;
         default:
             snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06d", 0);
             snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06d", 0);
