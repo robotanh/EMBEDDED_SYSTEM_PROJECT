@@ -37,6 +37,7 @@ extern uint32_t password;
 extern long unsigned int totalLiters;		//Total liters from beginning
 extern long unsigned int totalLitersShift;	//Total liter per shift, ( > 1000000 return 0)
 
+extern uint32_t currPrice;
  extern int LEDPointFlag; // 0 -> 5 to choose which LED has point
 /* USER CODE END Includes */
 
