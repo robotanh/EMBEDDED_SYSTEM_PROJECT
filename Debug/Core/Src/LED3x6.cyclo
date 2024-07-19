@@ -1,11 +1,4 @@
-<<<<<<< HEAD
-../Core/Src/LED3x6.c:62:9:CharToSegment	16
-../Core/Src/LED3x6.c:97:10:SevenSegLEDsHandler	4
-../Core/Src/LED3x6.c:114:6:UpdateDisplayBuffer	10
-../Core/Src/LED3x6.c:164:6:SevenSegLEDsScan	1
-=======
-../Core/Src/LED3x6.c:60:9:CharToSegment	12
-../Core/Src/LED3x6.c:87:10:SevenSegLEDsHandler	4
-../Core/Src/LED3x6.c:104:6:UpdateDisplayBuffer	10
-../Core/Src/LED3x6.c:154:6:SevenSegLEDsScan	1
->>>>>>> 7cec20a (init change price)
+../Core/Src/LED3x6.c:64:9:CharToSegment	16
+../Core/Src/LED3x6.c:99:10:SevenSegLEDsHandler	4
+../Core/Src/LED3x6.c:116:6:UpdateDisplayBuffer	10
+../Core/Src/LED3x6.c:166:6:SevenSegLEDsScan	1
