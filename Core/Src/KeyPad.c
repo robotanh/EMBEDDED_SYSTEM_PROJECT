@@ -344,6 +344,7 @@ void KeyLogic() {
 	keyPressed = 0xFF;
 }
 
+
 void KeyLogic_Action() {
     char buffer[7];
     switch (seqState) {

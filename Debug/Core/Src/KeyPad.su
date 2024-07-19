@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 ../Core/Src/KeyPad.c:57:6:KeyPad_Init	8	static
 ../Core/Src/KeyPad.c:61:9:ScanColumns	16	static
 ../Core/Src/KeyPad.c:99:9:KeyPad_Scan	16	static
@@ -5,3 +6,12 @@
 ../Core/Src/KeyPad.c:145:6:formatTotalLitersShift	24	static
 ../Core/Src/KeyPad.c:161:6:KeyLogic	16	static
 ../Core/Src/KeyPad.c:347:6:KeyLogic_Action	56	static
+=======
+../Core/Src/KeyPad.c:56:6:KeyPad_Init	8	static
+../Core/Src/KeyPad.c:60:9:ScanColumns	16	static
+../Core/Src/KeyPad.c:98:9:KeyPad_Scan	16	static
+../Core/Src/KeyPad.c:129:6:formatTotalLiters	24	static
+../Core/Src/KeyPad.c:144:6:formatTotalLitersShift	24	static
+../Core/Src/KeyPad.c:160:6:KeyLogic	16	static
+../Core/Src/KeyPad.c:326:6:KeyLogic_Action	56	static
+>>>>>>> 7cec20a (init change price)

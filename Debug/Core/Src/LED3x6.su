@@ -1,4 +1,11 @@
+<<<<<<< HEAD
 ../Core/Src/LED3x6.c:62:9:CharToSegment	16	static
 ../Core/Src/LED3x6.c:97:10:SevenSegLEDsHandler	24	static
 ../Core/Src/LED3x6.c:114:6:UpdateDisplayBuffer	24	static
 ../Core/Src/LED3x6.c:164:6:SevenSegLEDsScan	16	static,ignoring_inline_asm
+=======
+../Core/Src/LED3x6.c:60:9:CharToSegment	16	static
+../Core/Src/LED3x6.c:87:10:SevenSegLEDsHandler	24	static
+../Core/Src/LED3x6.c:104:6:UpdateDisplayBuffer	24	static
+../Core/Src/LED3x6.c:154:6:SevenSegLEDsScan	16	static,ignoring_inline_asm
+>>>>>>> 7cec20a (init change price)
