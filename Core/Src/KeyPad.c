@@ -224,7 +224,10 @@ void KeyLogic() {
 				break;
 /////////////////////////////////////////////////////KEY E/////////////////////////////////////////////////////////
 			case 'E':
-				if (seqState == SEQ_PRESSED_P_NUM&&
+				if(seqState == SEQ_IDLE){
+					seqState = SEQ_DISP_PRICE;
+				}
+				else if (seqState == SEQ_PRESSED_P_NUM&&
 					accumulatedNumber==password) {
 					seqState = SEQ_PRESSED_P_PSWRD_SETPRICE;
 					numberOfDigits = 0;
