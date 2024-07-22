@@ -35,7 +35,18 @@ uint8_t digitMapWithDP[10] = {
     0b00010000  // 9 with DP
 };
 
-uint8_t specialCharMap[15] = {
+uint8_t specialCharMap[17] = {
+	// FORMAT: 0b DP G F E D C B A
+	//		 --A--
+	//		|     |
+	//		F     B
+	//		|     |
+	//		 --G--
+	//		|     |
+	//		E     C
+	//		|     |
+	//		 --D--
+	// 1 : OFF, 0 : ON
     0b11000111, // 'L'
     0b01111111, // '.'
     0b11111000, // 'T'
@@ -45,13 +56,16 @@ uint8_t specialCharMap[15] = {
     0b10001001, // 'H'
     0b11001111, // 'I'
     0b10001110, // 'F'
-	0b10111100,	// 'G'
+	0b11000010,	// 'G'
 	0b10001100,	// 'P'
     0b10110001, // 'C'
     0b10000110, // 'E'
     0b11000001, // 'U'
     0b11001000, // 'N'
+	0b11001110, // 'R'
+	0b10100001, // 'D'
 };
+
 
 
 volatile uint8_t SevenSegScanState = 0;
@@ -94,6 +108,10 @@ uint8_t CharToSegment(char c) {
         return specialCharMap[13];
     } else if (c == 'N') {
         return specialCharMap[14];
+    } else if (c == 'R') {
+        return specialCharMap[15];
+    } else if (c == 'D') {
+        return specialCharMap[16];
     } else {
         return 0b11111111; // Blank
     }
