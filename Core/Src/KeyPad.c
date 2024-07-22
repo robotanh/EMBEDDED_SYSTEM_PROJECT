@@ -4,10 +4,10 @@ uint8_t keyPressed = 0xFF;
 uint8_t lcd_num = 0;
 
 const uint8_t keyMap[4][5] = {
-    {'C', '7', '4', '1', 'A'},
-    {'0', '8', '5', '2', 'B'},
-    {'E', '9', '6', '3', 'D'},
-	{'T', 'P', '$', 'L', 'F'}
+    {'C', '7', '4', '1', 'A'}, //F1
+    {'0', '8', '5', '2', 'B'}, //F2
+    {'E', '9', '6', '3', 'D'}, //F3
+	{'T', 'P', '$', 'L', 'F'}  //F4
 };
 
 #define DEBOUNCE_DELAY pdMS_TO_TICKS(50)
@@ -50,6 +50,7 @@ typedef enum {
 	SEQ_PRESSED_T_$,
 	SEQ_PRESSED_T_F3,
 	SEQ_PRESSED_T_F4,
+	SEQ_PRESSED_T_F4_PASSWORD,
 } SequenceState;
 
 
@@ -303,6 +304,13 @@ void KeyLogic() {
 					numberOfDigits = 0;
 					accumulatedNumber = 0;
 				}
+				else if(seqState == SEQ_PRESSED_T_F4&&    //T + F4 to delete totalLitersShift
+						accumulatedNumber == password){
+					seqState = SEQ_PRESSED_T_F4_PASSWORD;
+					numberOfDigits = 0;
+					accumulatedNumber = 0;
+					totalLitersShift = 0;
+				}
 				else if(seqState == SEQ_ENTER_OLD_PASSWORD&&
 						accumulatedNumber == password){
 					seqState = SEQ_ENTER_NEW_PASSWORD;
@@ -393,6 +401,7 @@ void KeyLogic() {
 					}else if (seqState == SEQ_PRESSED_P_NUM ||
 							seqState == SEQ_PRESSED_P_F2_PSWRD ||
 							seqState == SEQ_PRESSED_P_PSWRD_SETPRICE||
+							seqState == SEQ_PRESSED_T_F4||
 							seqState == SEQ_ENTER_OLD_PASSWORD ||
 							seqState == SEQ_ENTER_NEW_PASSWORD ||
 							seqState == SEQ_NUMBER
@@ -539,10 +548,15 @@ void KeyLogic_Action() {
             snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "%06d", 0);
             break;
         case SEQ_PRESSED_T_F4:
-            snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06d", 444444);
+        	snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06ld", accumulatedNumber);
             snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06d", 0);
-            snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "%06d", 0);
+            snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "DELETE");
             break;
+        case SEQ_PRESSED_T_F4_PASSWORD:
+        	snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), " ");
+			snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), " ");
+			snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "DONE ");
+			break;
         case SEQ_NUMBER:
 			snprintf(buffer, sizeof(buffer), "%06ld", accumulatedNumber);
 			snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%s", buffer);
