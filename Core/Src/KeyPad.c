@@ -1,5 +1,11 @@
 #include "KeyPad.h"
 
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//																													//
+//												VARIABLES AND CONSTANTS												//
+//																													//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 uint8_t keyPressed = 0xFF;
 uint8_t lcd_num = 0;
 
@@ -74,6 +80,12 @@ TimerHandle_t xBlinkTimer;
 char blinkText[7] = "";
 char blinkText1 [7] = "";
 int numBlinkRow =1;		//number of row will blink
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//																													//
+//												HELPER FUNCTIONS													//
+//																													//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Timer callback function
 void vBlinkTimerCallback(TimerHandle_t xTimer) {
@@ -210,11 +222,31 @@ void formatFloat(float value, char* buffer)
     snprintf(buffer, 7, "%03d.%02d", integerPart, decimalPart);
 }
 
-void setPriceandLiter (uint32_t inputPrice)
+void setOrderPrice (uint32_t inputPrice)
 {
 	orderPrice=inputPrice;
 	orderLiter=(double)orderPrice/(double)roundedPrice;
 }
+void setOrderLiter(uint32_t inputLiter){
+	orderLiter=inputLiter;
+	orderPrice=orderLiter*roundedPrice;
+}
+void IdleEnv(){
+	numberOfDigits = 0;
+	accumulatedNumber = 0;
+
+}
+void setIdle(){
+	seqState=SEQ_IDLE;
+	IdleEnv();
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//																													//
+//													KEY LOGIC FSM													//
+//																													//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 void KeyLogic() {
     TickType_t currentMillis = xTaskGetTickCount();
     uint8_t currentKey = KeyPad_Scan();
@@ -260,84 +292,55 @@ void KeyLogic() {
 
     if (keyPressed != 0xFF) {
 		switch (keyPressed) {
-/////////////////////////////////////////////////////KEY A/////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////KEY F1/////////////////////////////////////////////////////////
 			case 'A':
-				if(seqState==SEQ_IDLE){
-					setPriceandLiter(10000);
-				}
-				else if(seqState==SEQ_PRESSED_L){
-					orderLiter=1;
-					orderPrice=orderLiter*roundedPrice;
-					seqState=SEQ_IDLE;
-					numberOfDigits = 0;
-					accumulatedNumber = 0;
-				}
-				else{
-					seqState=SEQ_IDLE;
-					numberOfDigits = 0;
-					accumulatedNumber = 0;
+				if(seqState==SEQ_IDLE){					// F1
+					setOrderPrice(10000);
+				}else if(seqState==SEQ_PRESSED_L){		// L -> F1
+					setOrderLiter(1);
+					setIdle();
+				}else{
+					setIdle();
 				}
 				break;
-/////////////////////////////////////////////////////KEY B/////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////KEY F2/////////////////////////////////////////////////////////
 			case 'B':
-				if(seqState==SEQ_IDLE){
-					setPriceandLiter(15000);
-				}
-				else if(seqState==SEQ_PRESSED_L){
-					orderLiter=2;
-					orderPrice=orderLiter*roundedPrice;
-					seqState=SEQ_IDLE;
-					numberOfDigits = 0;
-					accumulatedNumber = 0;
-				}
-				else if(seqState==SEQ_PRESSED_P){
+				if(seqState==SEQ_IDLE){					// F2
+					setOrderPrice(15000);
+				}else if(seqState==SEQ_PRESSED_L){		// L -> F2
+					setOrderLiter(2);
+					setIdle();
+				}else if(seqState==SEQ_PRESSED_P){		// P -> F2
 					seqState=SEQ_PRESSED_P_F2_PSWRD;
 				}else{
-					seqState=SEQ_IDLE;
-					numberOfDigits = 0;
-					accumulatedNumber = 0;
+					setIdle();
 				}
 				break;
-/////////////////////////////////////////////////////KEY D/////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////KEY F3/////////////////////////////////////////////////////////
 			case 'D':
-				if(seqState==SEQ_IDLE){
-					setPriceandLiter(20000);
-				}
-				else if(seqState==SEQ_PRESSED_L){
-					orderLiter=5;
-					orderPrice=orderLiter*roundedPrice;
-					seqState=SEQ_IDLE;
-					numberOfDigits = 0;
-					accumulatedNumber = 0;
-				}
-				else if (seqState == SEQ_PRESSED_T) {
+				if(seqState==SEQ_IDLE){					// F3
+					setOrderPrice(20000);
+				}else if(seqState==SEQ_PRESSED_L){		// L -> F3
+					setOrderLiter(5);
+					setIdle();
+				}else if (seqState == SEQ_PRESSED_T) {	// T -> F3
 					seqState = SEQ_ENTER_OLD_PASSWORD;
-					numberOfDigits = 0;
-					accumulatedNumber = 0;
+					IdleEnv();
 				} else {
-					seqState = SEQ_IDLE;
-					numberOfDigits = 0;
-					accumulatedNumber = 0;
+					setIdle();
 				}
 				break;
-/////////////////////////////////////////////////////KEY F/////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////KEY F4/////////////////////////////////////////////////////////
 			case 'F':
-				if(seqState==SEQ_IDLE){
-					setPriceandLiter(50000);
-				}
-				else if(seqState==SEQ_PRESSED_L){
-					orderLiter=10;
-					orderPrice=orderLiter*roundedPrice;
-					seqState=SEQ_IDLE;
-					numberOfDigits = 0;
-					accumulatedNumber = 0;
-				}
-				else if (seqState == SEQ_PRESSED_T) {
+				if(seqState==SEQ_IDLE){					// F4
+					setOrderPrice(50000);
+				}else if(seqState==SEQ_PRESSED_L){		// L -> F4
+					setOrderLiter(10);
+					setIdle();
+				}else if (seqState == SEQ_PRESSED_T) {	// T -> F4
 					seqState = SEQ_PRESSED_T_F4;
 				} else {
-					seqState = SEQ_IDLE;
-					numberOfDigits = 0;
-					accumulatedNumber = 0;
+					setIdle();
 				}
 				break;
 /////////////////////////////////////////////////////KEY C/////////////////////////////////////////////////////////
@@ -348,62 +351,19 @@ void KeyLogic() {
 				break;
 /////////////////////////////////////////////////////KEY E/////////////////////////////////////////////////////////
 			case 'E':
-				if(seqState == SEQ_IDLE){
+				if(seqState == SEQ_IDLE){											// {SEQ_IDLE}: 						E to display roundPrice
 					seqState = SEQ_DISP_PRICE;
-				}
-				else if (seqState == SEQ_PRESSED_$){
-					setPriceandLiter(accumulatedNumber);
-					seqState = SEQ_IDLE;
-					numberOfDigits = 0;
-					accumulatedNumber = 0;
-				}
-				else if (seqState == SEQ_PRESSED_L){
-					orderLiter=accumulatedNumber;
-					orderPrice=orderLiter*roundedPrice;
-					seqState = SEQ_IDLE;
-					numberOfDigits = 0;
-					accumulatedNumber = 0;
-				}
-				else if (seqState == SEQ_PRESSED_P_NUM&&
+				}else if (seqState == SEQ_PRESSED_$){								// {SEQ_PRESSED_$}: 				$ -> [OrderPrice] -> E to set Order Price
+					setOrderPrice(accumulatedNumber);
+					setIdle();
+				}else if (seqState == SEQ_PRESSED_L){								// {SEQ_PRESSED_L}: 				L -> [OrderLiter] -> E to set Order Liter
+					setOrderLiter(accumulatedNumber);
+					setIdle();
+				}else if (seqState == SEQ_PRESSED_P_NUM&&							// {SEQ_PRESSED_P_NUM}:				P -> [PSSWRD] -> E to go to {SEQ_PRESSED_P_PSWRD_SETPRICE}
 					accumulatedNumber==password) {
 					seqState = SEQ_PRESSED_P_PSWRD_SETPRICE;
-					numberOfDigits = 0;
-					accumulatedNumber = 0;
-				}else if (seqState == SEQ_PRESSED_P_F2_PSWRD&&
-						accumulatedNumber==password){
-					seqState = SEQ_PRESSED_P_F2_PSWRD_ROUND;
-					numberOfDigits = 0;
-					accumulatedNumber = 0;
-				}else if (seqState == SEQ_PRESSED_P_F2_PSWRD_ROUND){
-					switch(accumulatedNumber){
-						case 0:		// round 50
-							if(currPrice%50<25){
-								roundedPrice=currPrice-(currPrice%50);
-							}else{
-								roundedPrice=currPrice-(currPrice%50)+50;
-							}
-							currentPriceState=PRICE_ROUND_50;
-							break;
-						case 1:		// round 100
-							if(currPrice%100<50){
-								roundedPrice=currPrice-(currPrice%100);
-							}else{
-								roundedPrice=currPrice-(currPrice%100)+100;
-							}
-							currentPriceState=PRICE_ROUND_100;
-							break;
-						case 2:		// no rounding
-							roundedPrice=currPrice;
-							currentPriceState=PRICE_DEFAULT;
-							break;
-						default:
-							break;
-					}
-					seqState = SEQ_IDLE;
-					numberOfDigits = 0;
-					accumulatedNumber = 0;
-				}
-				else if(seqState == SEQ_PRESSED_P_PSWRD_SETPRICE){
+					IdleEnv();
+				}else if(seqState == SEQ_PRESSED_P_PSWRD_SETPRICE){					//  {SEQ_PRESSED_P_PSWRD_SETPRICE}: P -> [PSSWRD] -> E -> [PRICE] -> E to set currPrice and apply roundPrice settings
 					currPrice = accumulatedNumber;
 					switch (currentPriceState){
 						case PRICE_ROUND_50:
@@ -424,33 +384,51 @@ void KeyLogic() {
 							roundedPrice=currPrice;
 							break;
 					}
-					seqState = SEQ_IDLE;
-					numberOfDigits = 0;
-					accumulatedNumber = 0;
-				}
-				else if(seqState == SEQ_PRESSED_T_F4&&    //T + F4 to delete totalLitersShift
+					setIdle();
+				}else if (seqState == SEQ_PRESSED_P_F2_PSWRD&&						// {SEQ_PRESSED_P_F2_PSWRD}:		P -> F2 -> [PSSWRD] -> E to go to {SEQ_PRESSED_P_F2_PSWRD_ROUND}
+						accumulatedNumber==password){
+					seqState = SEQ_PRESSED_P_F2_PSWRD_ROUND;
+					IdleEnv();
+				}else if (seqState == SEQ_PRESSED_P_F2_PSWRD_ROUND){				// {SEQ_PRESSED_P_F2_PSWRD_ROUND}:	P -> F2 -> [PSSWRD] -> E -> [0|1|2] -> E to confirm roundPrice
+					switch(accumulatedNumber){
+						case 0:															// [0]: round 50
+							if(currPrice%50<25){
+								roundedPrice=currPrice-(currPrice%50);
+							}else{
+								roundedPrice=currPrice-(currPrice%50)+50;
+							}
+							currentPriceState=PRICE_ROUND_50;
+							break;
+						case 1:															// [1]: round 100
+							if(currPrice%100<50){
+								roundedPrice=currPrice-(currPrice%100);
+							}else{
+								roundedPrice=currPrice-(currPrice%100)+100;
+							}
+							currentPriceState=PRICE_ROUND_100;
+							break;
+						case 2:															// [2]: no rounding
+							roundedPrice=currPrice;
+							currentPriceState=PRICE_DEFAULT;
+							break;
+						default:
+							break;
+					}
+					setIdle();
+				}else if(seqState == SEQ_PRESSED_T_F4&&    							// {SEQ_PRESSED_T_F4}: T -> F4 -> [PSSWRD] -> E to delete totalLitersShift
 						accumulatedNumber == password){
 					seqState = SEQ_PRESSED_T_F4_PASSWORD;
-					numberOfDigits = 0;
-					accumulatedNumber = 0;
+					IdleEnv();
 					totalLitersShift = 0;
-				}
-				else if(seqState == SEQ_ENTER_OLD_PASSWORD&&
+				}else if(seqState == SEQ_ENTER_OLD_PASSWORD&&
 						accumulatedNumber == password){
 					seqState = SEQ_ENTER_NEW_PASSWORD;
-					numberOfDigits = 0;
-					accumulatedNumber = 0;
-				}
-				else if(seqState == SEQ_ENTER_NEW_PASSWORD){
+					IdleEnv();
+				}else if(seqState == SEQ_ENTER_NEW_PASSWORD){
 					password = accumulatedNumber;
-					seqState = SEQ_IDLE;
-					numberOfDigits = 0;
-					accumulatedNumber = 0;
-				}
-				else {
-					seqState = SEQ_IDLE;
-					numberOfDigits = 0;
-					accumulatedNumber = 0;
+					setIdle();
+				}else {
+					setIdle();
 				}
 				break;
 /////////////////////////////////////////////////////KEY P/////////////////////////////////////////////////////////
@@ -458,9 +436,7 @@ void KeyLogic() {
 				if (seqState == SEQ_IDLE) {
 					seqState = SEQ_PRESSED_P;
 				} else {
-					seqState = SEQ_IDLE;
-					numberOfDigits = 0;
-					accumulatedNumber = 0;
+					setIdle();
 				}
 				break;
 /////////////////////////////////////////////////////KEY T/////////////////////////////////////////////////////////
@@ -468,9 +444,7 @@ void KeyLogic() {
 				if (seqState == SEQ_IDLE) {
 					seqState = SEQ_PRESSED_T;
 				} else {
-					seqState = SEQ_IDLE;
-					numberOfDigits = 0;
-					accumulatedNumber = 0;
+					setIdle();
 				}
 				break;
 /////////////////////////////////////////////////////KEY $/////////////////////////////////////////////////////////
@@ -480,9 +454,7 @@ void KeyLogic() {
 				}else if (seqState == SEQ_PRESSED_T) {
 					seqState = SEQ_PRESSED_T_$;
 				} else {
-					seqState = SEQ_IDLE;
-					numberOfDigits = 0;
-					accumulatedNumber = 0;
+					setIdle();
 				}
 				break;
 /////////////////////////////////////////////////////KEY L/////////////////////////////////////////////////////////
@@ -492,9 +464,7 @@ void KeyLogic() {
 				} else if (seqState == SEQ_PRESSED_T) {
 					seqState = SEQ_PRESSED_T_L;
 				} else {
-					seqState = SEQ_IDLE;
-					numberOfDigits = 0;
-					accumulatedNumber = 0;
+					setIdle();
 				}
 				break;
 			default:
@@ -529,9 +499,7 @@ void KeyLogic() {
 						numberOfDigits = 1;
 					}
 				}else{
-					seqState = SEQ_IDLE;
-					numberOfDigits = 0;
-					accumulatedNumber = 0;
+					setIdle();
 				}
 				break;
 		}
@@ -539,6 +507,11 @@ void KeyLogic() {
 	keyPressed = 0xFF;
 }
 
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//																													//
+//												KEY LOGIC ACTION FSM												//
+//																													//
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void KeyLogic_Action() {
     char buffer[7];
