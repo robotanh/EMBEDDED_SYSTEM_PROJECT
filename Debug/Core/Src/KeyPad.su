@@ -1,7 +1,7 @@
-../Core/Src/KeyPad.c:67:6:KeyPad_Init	8	static
-../Core/Src/KeyPad.c:71:9:ScanColumns	16	static
-../Core/Src/KeyPad.c:109:9:KeyPad_Scan	16	static
-../Core/Src/KeyPad.c:140:6:formatTotalLiters	24	static
-../Core/Src/KeyPad.c:155:6:formatTotalLitersShift	24	static
-../Core/Src/KeyPad.c:171:6:KeyLogic	16	static
-../Core/Src/KeyPad.c:435:6:KeyLogic_Action	56	static
+../Core/Src/KeyPad.c:71:6:KeyPad_Init	8	static
+../Core/Src/KeyPad.c:75:9:ScanColumns	16	static
+../Core/Src/KeyPad.c:113:9:KeyPad_Scan	16	static
+../Core/Src/KeyPad.c:144:6:formatTotalLiters	24	static
+../Core/Src/KeyPad.c:159:6:formatTotalLitersShift	24	static
+../Core/Src/KeyPad.c:175:6:KeyLogic	24	static
+../Core/Src/KeyPad.c:505:6:KeyLogic_Action	64	static
