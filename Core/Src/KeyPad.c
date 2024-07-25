@@ -68,6 +68,37 @@ PriceState currentPriceState = PRICE_ROUND_50;
 KeyState keyState = KEY_IDLE;
 SequenceState seqState = SEQ_IDLE;
 
+
+// Define the timer handle
+TimerHandle_t xBlinkTimer;
+char blinkText[7] = "";
+char blinkText1 [7] = "";
+int numBlinkRow =1;		//number of row will blink
+
+// Timer callback function
+void vBlinkTimerCallback(TimerHandle_t xTimer) {
+    static int toggle = 0;
+    toggle = !toggle;
+    if (toggle) {
+    	if(numBlinkRow == 1) snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), blinkText);
+    	else if (numBlinkRow == 2){
+    		snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), blinkText);
+    		snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), blinkText1);
+    	}
+    } else {
+    	if(numBlinkRow == 1) snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), " ");
+    	else if (numBlinkRow == 2){
+    		snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), " ");
+    		snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), " ");
+    	}
+    }
+}
+
+void StopBlinking() {
+    if (xBlinkTimer != NULL) {
+        xTimerStop(xBlinkTimer, 0);
+    }
+}
 void KeyPad_Init(void) {
     HAL_GPIO_WritePin(GPIOB, GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9, GPIO_PIN_RESET);
 }
@@ -171,7 +202,19 @@ void formatTotalLitersShift(long unsigned int total, uint32_t* buffer1, uint32_t
 	}
 }
 
+void formatFloat(float value, char* buffer)
+{
+    int integerPart = (int)value;
+    int decimalPart = (int)((value - integerPart) * 100);
 
+    snprintf(buffer, 7, "%03d.%02d", integerPart, decimalPart);
+}
+
+void setPriceandLiter (uint32_t inputPrice)
+{
+	orderPrice=inputPrice;
+	orderLiter=(double)orderPrice/(double)roundedPrice;
+}
 void KeyLogic() {
     TickType_t currentMillis = xTaskGetTickCount();
     uint8_t currentKey = KeyPad_Scan();
@@ -220,8 +263,7 @@ void KeyLogic() {
 /////////////////////////////////////////////////////KEY A/////////////////////////////////////////////////////////
 			case 'A':
 				if(seqState==SEQ_IDLE){
-					orderPrice=10000;
-					orderLiter=(double)orderPrice/(double)roundedPrice;
+					setPriceandLiter(10000);
 				}
 				else if(seqState==SEQ_PRESSED_L){
 					orderLiter=1;
@@ -239,8 +281,7 @@ void KeyLogic() {
 /////////////////////////////////////////////////////KEY B/////////////////////////////////////////////////////////
 			case 'B':
 				if(seqState==SEQ_IDLE){
-					orderPrice=15000;
-					orderLiter=(double)orderPrice/(double)roundedPrice;
+					setPriceandLiter(15000);
 				}
 				else if(seqState==SEQ_PRESSED_L){
 					orderLiter=2;
@@ -260,8 +301,7 @@ void KeyLogic() {
 /////////////////////////////////////////////////////KEY D/////////////////////////////////////////////////////////
 			case 'D':
 				if(seqState==SEQ_IDLE){
-					orderPrice=20000;
-					orderLiter=(double)orderPrice/(double)roundedPrice;
+					setPriceandLiter(20000);
 				}
 				else if(seqState==SEQ_PRESSED_L){
 					orderLiter=5;
@@ -283,8 +323,7 @@ void KeyLogic() {
 /////////////////////////////////////////////////////KEY F/////////////////////////////////////////////////////////
 			case 'F':
 				if(seqState==SEQ_IDLE){
-					orderPrice=50000;
-					orderLiter=(double)orderPrice/(double)roundedPrice;
+					setPriceandLiter(50000);
 				}
 				else if(seqState==SEQ_PRESSED_L){
 					orderLiter=10;
@@ -313,8 +352,7 @@ void KeyLogic() {
 					seqState = SEQ_DISP_PRICE;
 				}
 				else if (seqState == SEQ_PRESSED_$){
-					orderPrice=accumulatedNumber;
-					orderLiter=(double)orderPrice/(double)roundedPrice;
+					setPriceandLiter(accumulatedNumber);
 					seqState = SEQ_IDLE;
 					numberOfDigits = 0;
 					accumulatedNumber = 0;
@@ -507,8 +545,8 @@ void KeyLogic_Action() {
     switch (seqState) {
         case SEQ_IDLE:
         	snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06d", 0);
-        	snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06d", orderPrice);
-        	snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "%06.2f", orderLiter);
+        	snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06ld", orderPrice);
+        	formatFloat(orderLiter, SevenSegBuffer[2]);
             break;
         case SEQ_DISP_PRICE:
         	snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "GIA   ");
@@ -580,7 +618,15 @@ void KeyLogic_Action() {
 				}
 			}
 			snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06ld", row2);
-			snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "SHIFT ");
+
+			numBlinkRow =1;
+			snprintf(blinkText, sizeof(blinkText), "SHIFT "); // Set blink text
+			if (xBlinkTimer == NULL) {
+				xBlinkTimer = xTimerCreate("BlinkTimer", pdMS_TO_TICKS(300), pdTRUE, (void *)0, vBlinkTimerCallback);
+				if (xBlinkTimer != NULL) {
+					xTimerStart(xBlinkTimer, 0);
+				}
+			}
 
             break;
         case SEQ_PRESSED_T_L:
@@ -606,7 +652,15 @@ void KeyLogic_Action() {
 
 
             snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06ld", row2);
-            snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "TOTAL ");
+
+            numBlinkRow =1;
+			snprintf(blinkText, sizeof(blinkText), "TOTAL "); // Set blink text
+			if (xBlinkTimer == NULL) {
+				xBlinkTimer = xTimerCreate("BlinkTimer", pdMS_TO_TICKS(300), pdTRUE, (void *)0, vBlinkTimerCallback);
+				if (xBlinkTimer != NULL) {
+					xTimerStart(xBlinkTimer, 0);
+				}
+			}
 
 
 
@@ -643,8 +697,19 @@ void KeyLogic_Action() {
         case SEQ_PRESSED_L:
 			snprintf(buffer, sizeof(buffer), "%06ld", accumulatedNumber);
 			snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%s", buffer);
-			snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "SET   ");
-			snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "LIT   ");
+
+			numBlinkRow =2;
+			snprintf(blinkText1, sizeof(blinkText1), "SET   "); // Set blink text
+			snprintf(blinkText, sizeof(blinkText), "LIT   ");
+			if (xBlinkTimer == NULL) {
+				xBlinkTimer = xTimerCreate("BlinkTimer", pdMS_TO_TICKS(300), pdTRUE, (void *)0, vBlinkTimerCallback);
+				if (xBlinkTimer != NULL) {
+					xTimerStart(xBlinkTimer, 0);
+				}
+			}
+
+//			snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "SET   ");
+//			snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "LIT   ");
 			break;
         default:
             snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06d", 0);

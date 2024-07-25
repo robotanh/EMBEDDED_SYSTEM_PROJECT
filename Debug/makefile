@@ -67,8 +67,8 @@ all: main-build
 main-build: KPL_STM32F411RE.elf secondary-outputs
 
 # Tool invocations
-KPL_STM32F411RE.elf KPL_STM32F411RE.map: $(OBJS) $(USER_OBJS) C:\D\Career\Internship\KyPhatLoc\Project\NewDauSo\KPL_F411RE\STM32F411RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "KPL_STM32F411RE.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\D\Career\Internship\KyPhatLoc\Project\NewDauSo\KPL_F411RE\STM32F411RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="KPL_STM32F411RE.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+KPL_STM32F411RE.elf KPL_STM32F411RE.map: $(OBJS) $(USER_OBJS) D:\KPL\KPL_STM32F411\KPL_F411RE\STM32F411RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "KPL_STM32F411RE.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"D:\KPL\KPL_STM32F411\KPL_F411RE\STM32F411RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="KPL_STM32F411RE.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

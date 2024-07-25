@@ -55,7 +55,7 @@ long unsigned int totalLitersShift = 123456;   //lít trong ca, có thể đư�
 uint32_t currPrice = 24000; // Giá xăng trên lít hiện tại (vnđ/L)
 uint32_t roundedPrice = 24000;
 uint32_t orderPrice=0;
-double orderLiter=0;
+float orderLiter=0;
 
 int LEDPointFlag = 6; //No LEDs have point
 
