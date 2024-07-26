@@ -36,6 +36,7 @@ extern char SevenSegBuffer[3][7];
 extern uint32_t password;
 extern long unsigned int totalLiters;		//Total liters from beginning
 extern long unsigned int totalLitersShift;	//Total liter per shift, ( > 1000000 return 0)
+extern long unsigned int histTotalLiters[5]; //Show last 5 pumping times
 
 extern uint32_t currPrice;
 extern uint32_t roundedPrice;

@@ -517,6 +517,7 @@ void KeyLogic_Action() {
     char buffer[7];
     switch (seqState) {
         case SEQ_IDLE:
+        	LEDPointFlag = -1;
         	snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06d", 0);
         	snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06ld", orderPrice);
         	formatFloat(orderLiter, SevenSegBuffer[2]);
@@ -664,13 +665,26 @@ void KeyLogic_Action() {
         case SEQ_PRESSED_$:
 			snprintf(buffer, sizeof(buffer), "%06ld", accumulatedNumber);
 			snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%s", buffer);
-			snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "SET   ");
-			snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "GIA   ");
+
+			LEDPointFlag = -1;
+			numBlinkRow =2;
+			snprintf(blinkText1, sizeof(blinkText1), "SET   "); // Set blink text
+			snprintf(blinkText, sizeof(blinkText), "GIA   ");
+			if (xBlinkTimer == NULL) {
+				xBlinkTimer = xTimerCreate("BlinkTimer", pdMS_TO_TICKS(300), pdTRUE, (void *)0, vBlinkTimerCallback);
+				if (xBlinkTimer != NULL) {
+					xTimerStart(xBlinkTimer, 0);
+				}
+			}
+
+//			snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "SET   ");
+//			snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "GIA   ");
 			break;
         case SEQ_PRESSED_L:
 			snprintf(buffer, sizeof(buffer), "%06ld", accumulatedNumber);
 			snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%s", buffer);
 
+			LEDPointFlag = -1;
 			numBlinkRow =2;
 			snprintf(blinkText1, sizeof(blinkText1), "SET   "); // Set blink text
 			snprintf(blinkText, sizeof(blinkText), "LIT   ");
@@ -685,6 +699,7 @@ void KeyLogic_Action() {
 //			snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "LIT   ");
 			break;
         default:
+        	LEDPointFlag = -1;
             snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06d", 0);
             snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06d", 0);
             snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "%06d", 0);
