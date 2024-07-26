@@ -524,7 +524,7 @@ void KeyLogic_Action() {
             break;
         case SEQ_DISP_PRICE:
         	snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "GIA   ");
-			snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06ld", roundedPrice);
+			snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06ld", encoder_value);
 			snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "%06d", 0);
 			break;
         case SEQ_ENTER_OLD_PASSWORD:

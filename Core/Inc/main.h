@@ -44,6 +44,8 @@ extern uint32_t roundedPrice;
 extern uint32_t orderPrice;
 extern float orderLiter;
 
+extern uint32_t encoder_value;
+
  extern int LEDPointFlag; // 0 -> 5 to choose which LED has point
 /* USER CODE END Includes */
 

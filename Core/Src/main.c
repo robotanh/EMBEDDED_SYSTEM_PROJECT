@@ -48,17 +48,7 @@
 SPI_HandleTypeDef hspi1;
 SPI_HandleTypeDef hspi2;
 
-uint32_t password = 345;
-long unsigned int totalLiters = 25173777; //theo đơn vị ml tức là 1000 = 1 lít
-long unsigned int totalLitersShift = 123456;   //lít trong ca, có thể được reset khi giao ca
-
-uint32_t currPrice = 24000; // Giá xăng trên lít hiện tại (vnđ/L)
-uint32_t roundedPrice = 24000;
-uint32_t orderPrice=0;
-float orderLiter=0;
-
-int LEDPointFlag = 6; //No LEDs have point
-
+TIM_HandleTypeDef htim5;
 
 /* Definitions for Led3x6Task */
 osThreadId_t Led3x6TaskHandle;
@@ -74,6 +64,13 @@ const osThreadAttr_t KeyPad4x5Task_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityHigh,
 };
+/* Definitions for EncoderTask */
+osThreadId_t EncoderTaskHandle;
+const osThreadAttr_t EncoderTask_attributes = {
+  .name = "EncoderTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityHigh1,
+};
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -83,8 +80,10 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_SPI2_Init(void);
+static void MX_TIM5_Init(void);
 void Led3x6Run(void *argument);
 void KeyPad4x5Run(void *argument);
+void EncoderRun(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -94,9 +93,21 @@ void KeyPad4x5Run(void *argument);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 
+uint32_t password = 345;
+long unsigned int totalLiters = 25173777; //theo đơn vị ml tức là 1000 = 1 lít
+long unsigned int totalLitersShift = 123456;   //lít trong ca, có thể được reset khi giao ca
 
+uint32_t currPrice = 24000; // Giá xăng trên lít hiện tại (vnđ/L)
+uint32_t roundedPrice = 24000;
+uint32_t orderPrice=0;
+float orderLiter=0;
 
+int LEDPointFlag = 6; //No LEDs have point
 
+uint32_t encoder_value = 100;
+uint32_t last_encoder_value = 0;
+uint32_t stable_count = 0;
+const uint32_t debounce_threshold = 5;
 
 
 /* USER CODE END 0 */
@@ -132,6 +143,7 @@ int main(void)
   MX_GPIO_Init();
   MX_SPI1_Init();
   MX_SPI2_Init();
+  MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -161,6 +173,9 @@ int main(void)
 
   /* creation of KeyPad4x5Task */
   KeyPad4x5TaskHandle = osThreadNew(KeyPad4x5Run, NULL, &KeyPad4x5Task_attributes);
+
+  /* creation of EncoderTask */
+  EncoderTaskHandle = osThreadNew(EncoderRun, NULL, &EncoderTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -309,6 +324,56 @@ static void MX_SPI2_Init(void)
 }
 
 /**
+  * @brief TIM5 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM5_Init(void)
+{
+
+  /* USER CODE BEGIN TIM5_Init 0 */
+
+  /* USER CODE END TIM5_Init 0 */
+
+  TIM_Encoder_InitTypeDef sConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM5_Init 1 */
+
+  /* USER CODE END TIM5_Init 1 */
+  htim5.Instance = TIM5;
+  htim5.Init.Prescaler = 0;
+  htim5.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim5.Init.Period = 4294967295;
+  htim5.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim5.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  sConfig.EncoderMode = TIM_ENCODERMODE_TI12;
+  sConfig.IC1Polarity = TIM_ICPOLARITY_FALLING;
+  sConfig.IC1Selection = TIM_ICSELECTION_DIRECTTI;
+  sConfig.IC1Prescaler = TIM_ICPSC_DIV1;
+  sConfig.IC1Filter = 0;
+  sConfig.IC2Polarity = TIM_ICPOLARITY_FALLING;
+  sConfig.IC2Selection = TIM_ICSELECTION_DIRECTTI;
+  sConfig.IC2Prescaler = TIM_ICPSC_DIV1;
+  sConfig.IC2Filter = 0;
+  if (HAL_TIM_Encoder_Init(&htim5, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim5, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM5_Init 2 */
+  HAL_NVIC_SetPriority(TIM5_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(TIM5_IRQn);
+  /* USER CODE END TIM5_Init 2 */
+
+}
+
+/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -410,6 +475,42 @@ void KeyPad4x5Run(void *argument)
   /* USER CODE END KeyPad4x5Run */
 }
 
+/* USER CODE BEGIN Header_EncoderRun */
+/**
+* @brief Function implementing the EncoderTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_EncoderRun */
+void EncoderRun(void *argument)
+{
+  /* USER CODE BEGIN EncoderRun */
+  /* Infinite loop */
+  for(;;)
+  {
+	  ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+	  	      uint32_t current_value = __HAL_TIM_GET_COUNTER(&htim5);
+
+	  	      if (current_value == last_encoder_value)
+	  	      {
+	  	        stable_count++;
+	  	        if (stable_count >= debounce_threshold)
+	  	        {
+	  	          encoder_value = current_value;
+	  	          stable_count = 0;
+	  	        }
+	  	      }
+	  	      else
+	  	      {
+	  	        stable_count = 0;
+	  	      }
+	  	      last_encoder_value = current_value;
+	  	      osDelay(1);
+
+  }
+  /* USER CODE END EncoderRun */
+}
+
 /**
   * @brief  Period elapsed callback in non blocking mode
   * @note   This function is called  when TIM2 interrupt took place, inside
@@ -431,6 +532,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   /* USER CODE END Callback 1 */
 }
 
+void HAL_TIM_IC_CaptureCallback(TIM_HandleTypeDef *htim) {
+	  if (htim->Instance == TIM5) {
+	    BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+	    vTaskNotifyGiveFromISR(EncoderTaskHandle, &xHigherPriorityTaskWoken);
+	    portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
+	  }
+}
 /**
   * @brief  This function is executed in case of error occurrence.
   * @retval None
