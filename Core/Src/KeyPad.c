@@ -49,6 +49,7 @@ typedef enum {
 	SEQ_PRESSED_P_F2_PSWRD,
 	SEQ_PRESSED_P_F2_PSWRD_ROUND,
 	SEQ_PRESSED_P_NUM,
+	SEQ_PRESSED_P_NUM_SHOWHIST,
 	SEQ_PRESSED_P_PSWRD_SETPRICE,
 /////////////T KEY//////////////
     SEQ_PRESSED_T,
@@ -359,11 +360,17 @@ void KeyLogic() {
 				}else if (seqState == SEQ_PRESSED_L){								// {SEQ_PRESSED_L}: 				L -> [OrderLiter] -> E to set Order Liter
 					setOrderLiter(accumulatedNumber);
 					setIdle();
+				}else if (seqState == SEQ_PRESSED_P_NUM&&							// {SEQ_PRESSED_P_NUM}:				P -> [997979] -> E to go to {show hist}
+					accumulatedNumber==997979) {
+					seqState = SEQ_PRESSED_P_NUM_SHOWHIST;
+					IdleEnv();
+
 				}else if (seqState == SEQ_PRESSED_P_NUM&&							// {SEQ_PRESSED_P_NUM}:				P -> [PSSWRD] -> E to go to {SEQ_PRESSED_P_PSWRD_SETPRICE}
 					accumulatedNumber==password) {
 					seqState = SEQ_PRESSED_P_PSWRD_SETPRICE;
 					IdleEnv();
-				}else if(seqState == SEQ_PRESSED_P_PSWRD_SETPRICE){					//  {SEQ_PRESSED_P_PSWRD_SETPRICE}: P -> [PSSWRD] -> E -> [PRICE] -> E to set currPrice and apply roundPrice settings
+				}
+				else if(seqState == SEQ_PRESSED_P_PSWRD_SETPRICE){					//  {SEQ_PRESSED_P_PSWRD_SETPRICE}: P -> [PSSWRD] -> E -> [PRICE] -> E to set currPrice and apply roundPrice settings
 					currPrice = accumulatedNumber;
 					switch (currentPriceState){
 						case PRICE_ROUND_50:
@@ -493,7 +500,11 @@ void KeyLogic() {
 							accumulatedNumber = accumulatedNumber * 10 + (keyPressed - '0');
 							numberOfDigits++;
 						}
-					}else{
+					}else if(seqState == SEQ_PRESSED_P_NUM_SHOWHIST){
+						accumulatedNumber = keyPressed - '0';
+						numberOfDigits = 1;
+					}
+					else{
 						seqState = SEQ_NUMBER;
 						accumulatedNumber = keyPressed - '0';
 						numberOfDigits = 1;
@@ -561,6 +572,46 @@ void KeyLogic_Action() {
             snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06d", 0);
             snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "P88888");
             break;
+        case SEQ_PRESSED_P_NUM_SHOWHIST:
+        	LEDPointFlag = -1;
+        	if(1<=accumulatedNumber && accumulatedNumber <=5){
+				// Format the total liters into two parts
+				formatTotalLiters(histTotalLiters[accumulatedNumber-1], &row1, &row2);
+
+				// Ensure the combined string fits into the buffer
+				char row1StrHist[7]; // Buffer to hold formatted row1 string
+				snprintf(row1StrHist, sizeof(row1StrHist), "%06ld", row1);
+
+				// Combine "L.. " with the last two digits of row1
+				char combinedStrHist[8]; // Buffer to hold combined string "L.. " and last two digits of row1
+				snprintf(combinedStrHist, sizeof(combinedStrHist), "1.%04ld", row1 % 10000); // Extract last two digits of row1
+
+				// Fill SevenSegBuffer[0] with combinedStr and pad with spaces if necessary
+				for (int i = 0; i < 6; ++i) {
+					if (i < strlen(combinedStrHist)) {
+						SevenSegBuffer[0][i] = combinedStrHist[i];
+					} else {
+						SevenSegBuffer[0][i] = ' '; // Pad with spaces
+					}
+				}
+
+
+				snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06ld", row2);
+
+				numBlinkRow =1;
+				snprintf(blinkText, sizeof(blinkText), "HIST "); // Set blink text
+				if (xBlinkTimer == NULL) {
+					xBlinkTimer = xTimerCreate("BlinkTimer", pdMS_TO_TICKS(300), pdTRUE, (void *)0, vBlinkTimerCallback);
+					if (xBlinkTimer != NULL) {
+						xTimerStart(xBlinkTimer, 0);
+					}
+				}
+        	}
+        	else{
+        		accumulatedNumber = 1;
+        	}
+
+        	break;
         case SEQ_PRESSED_P_PSWRD_SETPRICE:
             snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06ld", accumulatedNumber);
             snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06d", 0);

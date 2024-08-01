@@ -96,7 +96,7 @@ void EncoderRun(void *argument);
 uint32_t password = 345;
 long unsigned int totalLiters = 25173777; //theo đơn vị ml tức là 1000 = 1 lít
 long unsigned int totalLitersShift = 123456;   //lít trong ca, có thể được reset khi giao ca
-
+long unsigned int histTotalLiters[5] = {111111,222222,333333,444444,555555};
 uint32_t currPrice = 24000; // Giá xăng trên lít hiện tại (vnđ/L)
 uint32_t roundedPrice = 24000;
 uint32_t orderPrice=0;
