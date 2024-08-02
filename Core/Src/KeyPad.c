@@ -51,6 +51,10 @@ typedef enum {
 	SEQ_PRESSED_P_NUM,
 	SEQ_PRESSED_P_NUM_SHOWHIST,
 	SEQ_PRESSED_P_NUM_SETIDVOI,
+	SEQ_PRESSED_P_SET_F1_PRICE,
+	SEQ_PRESSED_P_SET_F2_PRICE,
+	SEQ_PRESSED_P_SET_F3_PRICE,
+	SEQ_PRESSED_P_SET_F4_PRICE,
 	SEQ_PRESSED_P_PSWRD_SETPRICE,
 /////////////T KEY//////////////
     SEQ_PRESSED_T,
@@ -378,7 +382,57 @@ void KeyLogic() {
 					seqState = SEQ_IDLE;
 					IdleEnv();
 				}
+				else if (seqState == SEQ_PRESSED_P_NUM&&
+					accumulatedNumber==995591) {
+					seqState = SEQ_PRESSED_P_SET_F1_PRICE;
+					numberOfDigits = 0;
+					accumulatedNumber = 0;
+				}
+				else if (seqState == SEQ_PRESSED_P_NUM&&
+					accumulatedNumber==995592) {
+					seqState = SEQ_PRESSED_P_SET_F2_PRICE;
+					numberOfDigits = 0;
+					accumulatedNumber = 0;
 
+				}
+				else if (seqState == SEQ_PRESSED_P_NUM&&
+					accumulatedNumber==995593) {
+					seqState = SEQ_PRESSED_P_SET_F3_PRICE;
+					numberOfDigits = 0;
+					accumulatedNumber = 0;
+
+				}
+				else if (seqState == SEQ_PRESSED_P_NUM&&
+					accumulatedNumber==995594) {
+					seqState = SEQ_PRESSED_P_SET_F4_PRICE;
+					numberOfDigits = 0;
+					accumulatedNumber = 0;
+
+				}
+				else if (seqState == SEQ_PRESSED_P_SET_F1_PRICE) {
+					F1Price=accumulatedNumber;
+					seqState=SEQ_IDLE;
+					numberOfDigits = 0;
+					accumulatedNumber = 0;
+				}
+				else if (seqState == SEQ_PRESSED_P_SET_F2_PRICE) {
+					F2Price=accumulatedNumber;
+					seqState=SEQ_IDLE;
+					numberOfDigits = 0;
+					accumulatedNumber = 0;
+				}
+				else if (seqState == SEQ_PRESSED_P_SET_F3_PRICE) {
+					F3Price=accumulatedNumber;
+					seqState=SEQ_IDLE;
+					numberOfDigits = 0;
+					accumulatedNumber = 0;
+				}
+				else if (seqState == SEQ_PRESSED_P_SET_F4_PRICE) {
+					F4Price=accumulatedNumber;
+					seqState=SEQ_IDLE;
+					numberOfDigits = 0;
+					accumulatedNumber = 0;
+				}
 				else if (seqState == SEQ_PRESSED_P_NUM&&							// {SEQ_PRESSED_P_NUM}:				P -> [PSSWRD] -> E to go to {SEQ_PRESSED_P_PSWRD_SETPRICE}
 					accumulatedNumber==password) {
 					seqState = SEQ_PRESSED_P_PSWRD_SETPRICE;
@@ -500,6 +554,10 @@ void KeyLogic() {
 					}
 					else if (seqState == SEQ_PRESSED_P_NUM ||
 							seqState == SEQ_PRESSED_P_F2_PSWRD ||
+							seqState == SEQ_PRESSED_P_SET_F1_PRICE||
+							seqState == SEQ_PRESSED_P_SET_F2_PRICE||
+							seqState == SEQ_PRESSED_P_SET_F3_PRICE||
+							seqState == SEQ_PRESSED_P_SET_F4_PRICE||
 							seqState == SEQ_PRESSED_P_PSWRD_SETPRICE||
 							seqState == SEQ_PRESSED_P_NUM_SETIDVOI||
 							seqState == SEQ_PRESSED_T_F4||
@@ -596,6 +654,26 @@ void KeyLogic_Action() {
             snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06d", 0);
             snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "P88888");
             break;
+        case SEQ_PRESSED_P_SET_F1_PRICE:
+			snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06ld", accumulatedNumber);
+			snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06ld", F1Price);
+			snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "SET F1");
+			break;
+		case SEQ_PRESSED_P_SET_F2_PRICE:
+			snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06ld", accumulatedNumber);
+			snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06ld", F2Price);
+			snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "SET F2");
+			break;
+		case SEQ_PRESSED_P_SET_F3_PRICE:
+			snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06ld", accumulatedNumber);
+			snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06ld", F3Price);
+			snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "SET F3");
+			break;
+		case SEQ_PRESSED_P_SET_F4_PRICE:
+			snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06ld", accumulatedNumber);
+			snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06ld", F4Price);
+			snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "SET F4");
+			break;
         case SEQ_PRESSED_P_NUM_SETIDVOI:
         	snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06ld", accumulatedNumber);
         	snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "......");

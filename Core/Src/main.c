@@ -105,6 +105,11 @@ float orderLiter=0;
 
 uint8_t IDvoi = 11;			//địa chỉ ID của vòi từ 11 -> 47
 
+uint32_t F1Price=10000;
+uint32_t F2Price=15000;
+uint32_t F3Price=20000;
+uint32_t F4Price=50000;
+
 int LEDPointFlag = 6; //No LEDs have point
 
 uint32_t encoder_value = 100;
