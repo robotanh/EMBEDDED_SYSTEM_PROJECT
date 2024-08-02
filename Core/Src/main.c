@@ -99,8 +99,11 @@ long unsigned int totalLitersShift = 123456;   //lít trong ca, có thể đư�
 long unsigned int histTotalLiters[5] = {111111,222222,333333,444444,555555};
 uint32_t currPrice = 24000; // Giá xăng trên lít hiện tại (vnđ/L)
 uint32_t roundedPrice = 24000;
-uint32_t orderPrice=0;
+
+uint32_t orderPrice=0;		// Giá auto set
 float orderLiter=0;
+
+uint8_t IDvoi = 11;			//địa chỉ ID của vòi từ 11 -> 47
 
 int LEDPointFlag = 6; //No LEDs have point
 

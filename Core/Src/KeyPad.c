@@ -50,6 +50,7 @@ typedef enum {
 	SEQ_PRESSED_P_F2_PSWRD_ROUND,
 	SEQ_PRESSED_P_NUM,
 	SEQ_PRESSED_P_NUM_SHOWHIST,
+	SEQ_PRESSED_P_NUM_SETIDVOI,
 	SEQ_PRESSED_P_PSWRD_SETPRICE,
 /////////////T KEY//////////////
     SEQ_PRESSED_T,
@@ -360,12 +361,25 @@ void KeyLogic() {
 				}else if (seqState == SEQ_PRESSED_L){								// {SEQ_PRESSED_L}: 				L -> [OrderLiter] -> E to set Order Liter
 					setOrderLiter(accumulatedNumber);
 					setIdle();
-				}else if (seqState == SEQ_PRESSED_P_NUM&&							// {SEQ_PRESSED_P_NUM}:				P -> [997979] -> E to go to {show hist}
+				}else if (seqState == SEQ_PRESSED_P_NUM&&							// {SEQ_PRESSED_P_NUM}:				P -> [997979] -> E to go to show history
 					accumulatedNumber==997979) {
 					seqState = SEQ_PRESSED_P_NUM_SHOWHIST;
 					IdleEnv();
 
-				}else if (seqState == SEQ_PRESSED_P_NUM&&							// {SEQ_PRESSED_P_NUM}:				P -> [PSSWRD] -> E to go to {SEQ_PRESSED_P_PSWRD_SETPRICE}
+				}else if (seqState == SEQ_PRESSED_P_NUM&&							// {SEQ_PRESSED_P_NUM}:				P -> [999032] -> E to set ID gaspump
+						accumulatedNumber==999032){
+					seqState = SEQ_PRESSED_P_NUM_SETIDVOI;
+					IdleEnv();
+				}else if (seqState == SEQ_PRESSED_P_NUM_SETIDVOI){
+					if ( 11 <= accumulatedNumber  && accumulatedNumber <= 47){
+						IDvoi = accumulatedNumber;
+
+					}
+					seqState = SEQ_IDLE;
+					IdleEnv();
+				}
+
+				else if (seqState == SEQ_PRESSED_P_NUM&&							// {SEQ_PRESSED_P_NUM}:				P -> [PSSWRD] -> E to go to {SEQ_PRESSED_P_PSWRD_SETPRICE}
 					accumulatedNumber==password) {
 					seqState = SEQ_PRESSED_P_PSWRD_SETPRICE;
 					IdleEnv();
@@ -476,35 +490,45 @@ void KeyLogic() {
 				break;
 			default:
 /////////////////////////////////////////////////////KEY 0-9/////////////////////////////////////////////////////////
-				if(keyPressed >= '0' && keyPressed <= '9') {
-					if(seqState==SEQ_PRESSED_P){
+				if(keyPressed >= '0' && keyPressed <= '9')
+				{
+					if(seqState==SEQ_PRESSED_P)
+					{
 						seqState=SEQ_PRESSED_P_NUM;
 						accumulatedNumber = keyPressed - '0';
 						numberOfDigits = 1;
-					}else if (seqState == SEQ_PRESSED_P_NUM ||
+					}
+					else if (seqState == SEQ_PRESSED_P_NUM ||
 							seqState == SEQ_PRESSED_P_F2_PSWRD ||
 							seqState == SEQ_PRESSED_P_PSWRD_SETPRICE||
+							seqState == SEQ_PRESSED_P_NUM_SETIDVOI||
 							seqState == SEQ_PRESSED_T_F4||
 							seqState == SEQ_ENTER_OLD_PASSWORD ||
 							seqState == SEQ_ENTER_NEW_PASSWORD ||
 							seqState == SEQ_NUMBER ||
 							seqState == SEQ_PRESSED_$||
 							seqState == SEQ_PRESSED_L
-							) {
+							)
+					{
 						if (numberOfDigits < 6) {
 							accumulatedNumber = accumulatedNumber * 10 + (keyPressed - '0');
 							numberOfDigits++;
 						}
-					}else if(seqState == SEQ_PRESSED_P_F2_PSWRD_ROUND){
+					}
+					else if(seqState == SEQ_PRESSED_P_F2_PSWRD_ROUND)
+					{
 						if (numberOfDigits < 1) {
 							accumulatedNumber = accumulatedNumber * 10 + (keyPressed - '0');
 							numberOfDigits++;
 						}
-					}else if(seqState == SEQ_PRESSED_P_NUM_SHOWHIST){
+					}
+					else if(seqState == SEQ_PRESSED_P_NUM_SHOWHIST) 	//// {SEQ_PRESSED_P_NUM}:				P -> [997979] -> E -> number
+					{
 						accumulatedNumber = keyPressed - '0';
 						numberOfDigits = 1;
 					}
-					else{
+					else
+					{
 						seqState = SEQ_NUMBER;
 						accumulatedNumber = keyPressed - '0';
 						numberOfDigits = 1;
@@ -535,7 +559,7 @@ void KeyLogic_Action() {
             break;
         case SEQ_DISP_PRICE:
         	snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "GIA   ");
-			snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06ld", encoder_value);
+			snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06d", IDvoi);
 			snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "%06d", 0);
 			break;
         case SEQ_ENTER_OLD_PASSWORD:
@@ -572,6 +596,18 @@ void KeyLogic_Action() {
             snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06d", 0);
             snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "P88888");
             break;
+        case SEQ_PRESSED_P_NUM_SETIDVOI:
+        	snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06ld", accumulatedNumber);
+        	snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "......");
+        	numBlinkRow =1;
+			snprintf(blinkText, sizeof(blinkText), "SET ID"); // Set blink text
+			if (xBlinkTimer == NULL) {
+				xBlinkTimer = xTimerCreate("BlinkTimer", pdMS_TO_TICKS(300), pdTRUE, (void *)0, vBlinkTimerCallback);
+				if (xBlinkTimer != NULL) {
+					xTimerStart(xBlinkTimer, 0);
+				}
+			}
+        	break;
         case SEQ_PRESSED_P_NUM_SHOWHIST:
         	LEDPointFlag = -1;
         	if(1<=accumulatedNumber && accumulatedNumber <=5){
