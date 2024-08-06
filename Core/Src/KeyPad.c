@@ -301,7 +301,7 @@ void KeyLogic() {
 /////////////////////////////////////////////////////KEY F1/////////////////////////////////////////////////////////
 			case 'A':
 				if(seqState==SEQ_IDLE){					// F1
-					setOrderPrice(10000);
+					setOrderPrice(F1Price);
 				}else if(seqState==SEQ_PRESSED_L){		// L -> F1
 					setOrderLiter(1);
 					setIdle();
@@ -312,7 +312,7 @@ void KeyLogic() {
 /////////////////////////////////////////////////////KEY F2/////////////////////////////////////////////////////////
 			case 'B':
 				if(seqState==SEQ_IDLE){					// F2
-					setOrderPrice(15000);
+					setOrderPrice(F2Price);
 				}else if(seqState==SEQ_PRESSED_L){		// L -> F2
 					setOrderLiter(2);
 					setIdle();
@@ -325,7 +325,7 @@ void KeyLogic() {
 /////////////////////////////////////////////////////KEY F3/////////////////////////////////////////////////////////
 			case 'D':
 				if(seqState==SEQ_IDLE){					// F3
-					setOrderPrice(20000);
+					setOrderPrice(F3Price);
 				}else if(seqState==SEQ_PRESSED_L){		// L -> F3
 					setOrderLiter(5);
 					setIdle();
@@ -339,7 +339,7 @@ void KeyLogic() {
 /////////////////////////////////////////////////////KEY F4/////////////////////////////////////////////////////////
 			case 'F':
 				if(seqState==SEQ_IDLE){					// F4
-					setOrderPrice(50000);
+					setOrderPrice(F4Price);
 				}else if(seqState==SEQ_PRESSED_L){		// L -> F4
 					setOrderLiter(10);
 					setIdle();
@@ -613,7 +613,7 @@ void KeyLogic_Action() {
         	LEDPointFlag = -1;
         	snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "%06d", 0);
         	snprintf(SevenSegBuffer[1], sizeof(SevenSegBuffer[1]), "%06ld", orderPrice);
-        	formatFloat(orderLiter, SevenSegBuffer[2]);
+        	snprintf(SevenSegBuffer[2], sizeof(SevenSegBuffer[2]), "%06ld", roundedPrice);
             break;
         case SEQ_DISP_PRICE:
         	snprintf(SevenSegBuffer[0], sizeof(SevenSegBuffer[0]), "GIA   ");
