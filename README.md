@@ -31,6 +31,7 @@ Before setting up the project, ensure you have the following:
   - OpenOCD or ST-Link tools for flashing firmware
 
 ---
+```
 
 ## Setup Instructions
 
@@ -64,13 +65,13 @@ cd EMBEDDED_SYSTEM_PROJECT
 
 ### Step 5: Connect the Hardware
 
-1. Attach the sensors and output devices to the STM32F411RET6 as per the pin configurations in the code.
+1. Attach the input and output devices to the STM32F411RET6 as per the pin configurations in the code.
 2. Power the system using a suitable power source.
 
 ### Step 6: Run the System
 
 1. Once flashed, the microcontroller should start executing the program.
-2. Monitor the headcounter functionality through LCD.
+2. Monitor the headcounter functionality through 3x6 LCD.
 
 
 ## Project Structure
