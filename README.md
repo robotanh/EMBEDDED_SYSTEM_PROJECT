@@ -23,7 +23,7 @@ Before setting up the project, ensure you have the following:
 - A development environment (e.g., STM32CubeIDE or Keil uVision)
 - Required hardware:
   - LCD 3x6 display for output (optional)
-  - Keypad 5x5 for manual interaction
+  - Keypad 4x5 for manual interaction
 - Required dependencies:
   - freeRTOS
   - ARM toolchain (if compiling manually)
