@@ -10,7 +10,7 @@ This repository contains the implementation of a simple Gas Pump Headcounter Sys
 ## Features
 
 - Real-Time Counting: Tracks the number of heads interacting with the gas pump.
-- Embedded System Integration: Utilizes STM32F411RET6 peripherals for KEYPAD and LCD.
+- Embedded System Integration: Utilizes STM32F411RET6 peripherals for KEYPAD and LED screen.
 - Modular Design: Codebase is structured for easy understanding, debugging, and maintenance.
 
 ---
@@ -22,7 +22,7 @@ Before setting up the project, ensure you have the following:
 - A compatible microcontroller (e.g., STM32 or equivalent)
 - A development environment (e.g., STM32CubeIDE or Keil uVision)
 - Required hardware:
-  - LCD 3x6 display for output (optional)
+  - LED screen 3x6 display for output (optional)
   - Keypad 4x5 for manual interaction
 - Required dependencies:
   - freeRTOS
@@ -71,7 +71,7 @@ cd EMBEDDED_SYSTEM_PROJECT
 ### Step 6: Run the System
 
 1. Once flashed, the microcontroller should start executing the program.
-2. Monitor the headcounter functionality through 3x6 LCD.
+2. Monitor the headcounter functionality through 3x6 LED screen.
 
 
 ## Project Structure
