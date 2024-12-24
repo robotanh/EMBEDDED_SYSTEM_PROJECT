@@ -9,9 +9,9 @@ This repository contains the implementation of a simple Gas Pump Headcounter Sys
 
 ## Features
 
-- **Real-Time Counting**: Tracks the number of heads interacting with the gas pump.
-- **Embedded System Integration**: Utilizes STM32F411RET6 peripherals for KEYPAD and LCD.
-- **Modular Design**: Codebase is structured for easy understanding, debugging, and maintenance.
+- Real-Time Counting: Tracks the number of heads interacting with the gas pump.
+- Embedded System Integration: Utilizes STM32F411RET6 peripherals for KEYPAD and LCD.
+- Modular Design: Codebase is structured for easy understanding, debugging, and maintenance.
 
 ---
 
